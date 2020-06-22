@@ -24,8 +24,12 @@ export default {
 	#app{
 		font-size: 1.2rem;
 	}
+	ul li{
+		list-style: none;
+	}
 	.con-area{
 		min-height: calc(100% - 5rem);
+		/* height: calc(100% - 5rem); */
 		background: #fff;
 		border-radius: 3rem;
 		width: 100%;

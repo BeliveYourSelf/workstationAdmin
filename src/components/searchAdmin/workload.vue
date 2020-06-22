@@ -1,55 +1,77 @@
 <template>
 	<div class="con-area">
-		<div class="width-style">
-			<!-- 搜索区域 -->
-			<div class="search-area">
-				<el-row>
-					<el-col :span="20">
-						<el-date-picker
-							v-model="searchForm.searchData"
-							type="daterange"
-							range-separator="至"
-							start-placeholder="开始日期"
-							end-placeholder="结束日期"
-							class="data-picker-set">
-						</el-date-picker>
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary">导出打印</el-button>
-					</el-col>
-				</el-row>
-			</div>
-			<div class="test-main">
-				<el-table
-						class="main-table"
-						:data="tableData"
-						style="width: 100%"
-						:row-class-name="tableRowClassName"
-						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}"
-						:summary-method="getSummaries"
-						show-summary>
-						<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
-						</el-table-column>
-						<el-table-column prop="code" label="工号" align="center"></el-table-column>
-						<el-table-column prop="departmentName" label="姓名" align="center"></el-table-column>
-						<el-table-column prop="abbreviation" label="审方工作量" align="center"></el-table-column>
-						<el-table-column prop="pinyin" label="查房工作量" align="center"></el-table-column>
-						<el-table-column prop="group" label="监护工作量" align="center"></el-table-column>
-						
-				 </el-table>
-				 <!-- <div class="block page-area">
-					  <el-pagination
-						 @size-change="handleSizeChange"
-						 @current-change="handleCurrentChange"
-						 :current-page="currentPage"
-						 :page-sizes="[15, 20, 50, 100]"
-						 :page-size="length"
-						 layout="total, sizes, prev, pager, next, jumper"
-						 :total="total">
-					  </el-pagination>
-				 </div> -->
-			</div>
-		</div>
+		<el-row class="my-row">
+			<el-col :span="4" class="staff-col">
+				<div class="search-staff">
+					<el-input
+						class="search-code"
+						placeholder="请输入工号"
+						v-model="searchForm.code"
+						suffix-icon="el-icon-search"
+						clearable>
+					</el-input>
+					<ul class="staff-ul">
+						<li>王晓红</li>
+						<li>王晓红</li>
+						<li>王晓红</li>
+						<li>王晓红</li>
+					</ul>
+				</div>
+			</el-col>
+			<el-col :span="20">
+				<div class="width-style">
+					<!-- 搜索区域 -->
+					<div class="search-area">
+						<el-row>
+							<el-col :span="20">
+								<el-date-picker
+									v-model="searchForm.searchData"
+									type="daterange"
+									range-separator="至"
+									start-placeholder="开始日期"
+									end-placeholder="结束日期"
+									class="data-picker-set">
+								</el-date-picker>
+							</el-col>
+							<el-col :span="4" class="search-btn-area">
+								<el-button class="search-btn" type="primary">导出打印</el-button>
+							</el-col>
+						</el-row>
+					</div>
+					<div class="test-main">
+						<el-table
+								class="main-table"
+								:data="tableData"
+								style="width: 100%"
+								:row-class-name="tableRowClassName"
+								:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}"
+								:summary-method="getSummaries"
+								show-summary>
+								<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+								</el-table-column>
+								<el-table-column prop="code" label="工号" align="center"></el-table-column>
+								<el-table-column prop="departmentName" label="姓名" align="center"></el-table-column>
+								<el-table-column prop="abbreviation" label="审方工作量" align="center"></el-table-column>
+								<el-table-column prop="pinyin" label="查房工作量" align="center"></el-table-column>
+								<el-table-column prop="group" label="监护工作量" align="center"></el-table-column>
+								
+						 </el-table>
+						 <!-- <div class="block page-area">
+							  <el-pagination
+								 @size-change="handleSizeChange"
+								 @current-change="handleCurrentChange"
+								 :current-page="currentPage"
+								 :page-sizes="[15, 20, 50, 100]"
+								 :page-size="length"
+								 layout="total, sizes, prev, pager, next, jumper"
+								 :total="total">
+							  </el-pagination>
+						 </div> -->
+					</div>
+				</div>
+			</el-col>
+		</el-row>
+		
 	</div>
 </template>
 
@@ -62,7 +84,8 @@
 				length: 15,
 				total: 400,
 				searchForm: {
-					searchData: ''
+					searchData: '',
+					code: ''
 				},
 				tableData: [{
 						code:'767554',
@@ -161,5 +184,25 @@
 	}
 	.el-date-editor--daterange.el-input__inner{
 		width: 28rem;
+	}
+	.staff-col{
+		height: 100%;
+	}
+	.search-staff{
+		height: 45.8rem;
+		box-shadow:0rem 0.1rem 1rem 0rem rgba(4,0,0,0.1);
+		border-radius:1rem;
+		padding: 2rem 1rem;
+		margin-left: 2rem;
+	}
+	.my-row{
+		height: 100%;
+	}
+	.staff-ul{
+		padding-left: 3rem;
+	}
+	.staff-ul li {
+		line-height: 2.8rem;
+		font-size: 1.4rem;
 	}
 </style>
