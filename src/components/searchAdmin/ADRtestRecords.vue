@@ -56,7 +56,6 @@
 						 </div>
 					</div>
 				</div>
-		</el-row>
 		
 	</div>
 </template>

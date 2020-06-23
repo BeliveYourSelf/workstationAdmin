@@ -1,13 +1,4 @@
 <template>
-	<div>不合理用药</div>
-</template>
-
-<script>
-</script>
-
-<style>
-</style>
-<template>
 	<div class="con-area">
 
 		<div class="width-style">
@@ -133,7 +124,7 @@
 			},
 			// 查看
 			view(index, row) {
-				
+				this.$router.push({path: 'unreasonableMedicationView',query: {index: index}})
 			}
 		}
 	}

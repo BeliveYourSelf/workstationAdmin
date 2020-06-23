@@ -9,6 +9,7 @@ import drugAdmin from '@/components/basicData/drugAdmin.vue' //基本数据管�
 import trialRuleAdmin from '@/components/basicData/trialRuleAdmin.vue' //基本数据管理-审方规则
 import workload from '@/components/searchAdmin/workload.vue' //查询-工作量
 import unreasonableMedication from '@/components/searchAdmin/unreasonableMedication.vue' //查询-不合理用药
+import unreasonableMedicationView from '@/components/searchAdmin/unreasonableMedicationView.vue' //查询-不合理用药查看
 import roundupRecords from '@/components/searchAdmin/roundupRecords.vue' //查询-查房记录
 import prescription from '@/components/searchAdmin/prescription.vue' //查询-处方
 import guardianshipRecord from '@/components/searchAdmin/guardianshipRecord.vue' //查询-监护记录
@@ -35,12 +36,14 @@ export default new Router({
 			},
 			children: [{
 				path: 'workBench',
+				name: 'workBench',
 				component: workBench,
 				meta: {
 					title: '工作台'
 				}
 			},{
 				path: 'hospitalDepartmentAdmin',
+				name: 'hospitalDepartmentAdmin',
 				component: hospitalDepartmentAdmin,
 				meta: {
 					title: '医院科室'
@@ -68,6 +71,13 @@ export default new Router({
 				component: unreasonableMedication,
 				meta: {
 					title: '不合理用药'
+				}
+			},{
+				path: 'unreasonableMedicationView',
+				name: 'unreasonableMedicationView',
+				component: unreasonableMedicationView,
+				meta: {
+					title: '不合理用药详情'
 				}
 			},{
 				path: 'workload',
