@@ -28,14 +28,14 @@
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
 						<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
-						<el-table-column prop="lavel" label="监护等级" align="center"></el-table-column>
-						<el-table-column prop="bed" label="床位" align="center"></el-table-column>
-						<el-table-column prop="name" label="姓名" align="center"></el-table-column>
-						<el-table-column prop="sex" label="性别" align="center"></el-table-column>
-						<el-table-column prop="age" label="年龄" align="center"></el-table-column>
-						<el-table-column prop="diagnosis" label="入院诊断" align="center"></el-table-column>
-						<el-table-column prop="dayNum" label="入院天数" align="center"></el-table-column>
-						<el-table-column fixed="right" label="操作" width="120" align="center">
+						<el-table-column prop="lavel" label="类型" align="center"></el-table-column>
+						<el-table-column prop="bed" label="分类" align="center"></el-table-column>
+						<el-table-column prop="name" label="处方号" align="center"></el-table-column>
+						<el-table-column prop="sex" label="药品" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="age" label="作用药品" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="diagnosis" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="dayNum" label="来源" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<!-- <el-table-column fixed="right" label="操作" width="120" align="center">
 							<template slot-scope="scope">
 								<el-button
 									@click.native.prevent="deleteRow(scope.$index, tableData)"
@@ -45,7 +45,7 @@
 									<span v-else-if="scope.row.status == 2" class="text-orange">解冻</span>
 								</el-button>
 							</template>
-						</el-table-column>
+						</el-table-column> -->
 				 </el-table>
 				 <div class="block page-area">
 					 <el-pagination
@@ -94,10 +94,10 @@
 				// 工作情况数据
 				lineData: [70, 68, 48, 12, 45, 30],
 				tableData: [
-					{lavel:'一级',bed:'z-678',name:'沈燕燕',sex:'女',age:67,diagnosis:'过敏皮炎',dayNum:'10',status:1},
-					{lavel:'一级',bed:'z-678',name:'沈燕燕',sex:'女',age:67,diagnosis:'过敏皮炎',dayNum:'10',status:1},
-					{lavel:'一级',bed:'z-678',name:'沈燕燕',sex:'女',age:67,diagnosis:'过敏皮炎',dayNum:'10',status:2},
-					{lavel:'一级',bed:'z-678',name:'沈燕燕',sex:'女',age:67,diagnosis:'过敏皮炎',dayNum:'10',status:1},
+					{lavel:'系统审方不合理用药',bed:'配伍禁忌',name:'345678',sex:'水溶性维生素针',age:'葡萄糖酸钙针',diagnosis:'出现理化、药理、药动学及药效',dayNum:'出现理化、药理、药动学及药效',status:1},
+					{lavel:'系统审方不合理用药',bed:'配伍禁忌',name:'345678',sex:'水溶性维生素针',age:'葡萄糖酸钙针',diagnosis:'禁忌原因不明',dayNum:'出现理化、药理、药动学及药效',status:1},
+					{lavel:'系统审方不合理用药',bed:'配伍禁忌',name:'345678',sex:'水溶性维生素针',age:'葡萄糖酸钙针',diagnosis:'禁忌原因不明',dayNum:'出现理化、药理、药动学及药效',status:2},
+					{lavel:'系统审方不合理用药',bed:'配伍禁忌',name:'345678',sex:'水溶性维生素针',age:'葡萄糖酸钙针',diagnosis:'出现理化、药理、药动学及药效',dayNum:'出现理化、药理、药动学及药效',status:1},
 				]
 			}
 		},

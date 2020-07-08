@@ -1,20 +1,22 @@
 <template>
 	<div class="con-area">
+		<el-breadcrumb separator-class="el-icon-arrow-right">
+		  <el-breadcrumb-item>查询</el-breadcrumb-item>
+		  <el-breadcrumb-item>处方</el-breadcrumb-item>
+		</el-breadcrumb>
 		<el-row class="my-row">
 			<el-col :span="4" class="staff-col">
 				<div class="search-staff">
 					<el-input
 						class="search-code"
 						placeholder="请输入科室"
-						v-model="searchForm.code"
+						v-model="searchForm.departmentName"
 						suffix-icon="el-icon-search"
-						clearable>
+						clearable
+						@keyup.enter.native="getDepartment">
 					</el-input>
 					<ul class="staff-ul">
-						<li>肾脏内科</li>
-						<li>血液内科</li>
-						<li>甲状腺外科一</li>
-						<li>呼吸内五科</li>
+						<li v-for="list in departmentList" @click="selDepartment(list.departmentName)">{{list.departmentName}}</li>
 					</ul>
 				</div>
 			</el-col>
@@ -30,25 +32,32 @@
 									range-separator="至"
 									start-placeholder="开始日期"
 									end-placeholder="结束日期"
-									class="data-picker-set">
+									class="data-picker-set"
+									format="yyyy 年 MM 月 dd 日"
+									value-format="yyyy/MM/dd HH:mm:ss">
 								</el-date-picker>
 								<span class="input-tip">状态：</span>
-								<el-input
-									class="input-width"
-									placeholder="不良反应类别:"
-									v-model="searchForm.name"
-									clearable>
-								</el-input>
+								<el-select v-model="searchForm.checkStatus" placeholder="请选择" clearable>
+									<el-option
+										v-for="item in checkStatusList"
+										:key="item.id"
+										:label="item.name"
+										:value="item.id">
+									</el-option>
+								</el-select>
 								<span class="input-tip">分类：</span>
-								<el-input
-									class="input-width"
-									placeholder="不良反应类别:"
-									v-model="searchForm.name"
-									clearable>
-								</el-input>
+								<el-select v-model="searchForm.drugType" placeholder="请选择" clearable>
+									<el-option
+										v-for="item in drugTypeList"
+										:key="item.id"
+										:label="item.name"
+										:value="item.id">
+									</el-option>
+								</el-select>
 							</el-col>
 							<el-col :span="4" class="search-btn-area">
-								<el-button class="search-btn" type="primary">导出打印</el-button>
+								<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
+								<el-button class="search-btn" type="primary" @click="downloadExcel">导出打印</el-button>
 							</el-col>
 						</el-row>
 					</div>
@@ -61,25 +70,41 @@
 							:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
 								<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
 								</el-table-column>
-								<el-table-column prop="medicalOrderNumber" label="医嘱号" align="center" width="100"></el-table-column>
-								<el-table-column prop="status" label="状态" align="center"></el-table-column>
-								<el-table-column prop="type" label="分类" align="center"></el-table-column>
+								<el-table-column prop="id" label="医嘱号" align="center" width="100"></el-table-column>
+								<el-table-column label="状态" align="center">
+									<template slot-scope="scope">
+										<span v-if="scope.row.checkStatus==1">未审</span>
+										<span v-else-if="scope.row.checkStatus==2">通过</span>
+										<span v-else-if="scope.row.checkStatus==3">未通过</span>
+										<span v-else-if="scope.row.checkStatus==4">已停</span>
+										<span v-else-if="scope.row.checkStatus==5">暂停</span>
+									</template>
+								</el-table-column>
+								<el-table-column label="分类" align="center">
+									<template slot-scope="scope">
+										<span v-if="scope.row.drugType==1">普</span>
+										<span v-else-if="scope.row.drugType==2">抗</span>
+										<span v-else-if="scope.row.drugType==3">化</span>
+										<span v-else-if="scope.row.drugType==4">营</span>
+										<span v-else-if="scope.row.drugType==5">中</span>
+									</template>
+								</el-table-column>
 								<el-table-column prop="frequency" label="频次" align="center"></el-table-column>
 								<el-table-column prop="ward" label="病区" align="center" :show-overflow-tooltip="true"></el-table-column>
-								<el-table-column prop="bed" label="床号" align="center"></el-table-column>
-								<el-table-column prop="patient" label="患者" align="center"></el-table-column>
-								<el-table-column prop="receiveTime" label="接收时间" align="center" width="120"></el-table-column>
-								<el-table-column prop="stopDate" label="停止日期" align="center" width="120"></el-table-column>
-								<el-table-column prop="startDate" label="开始日期" align="center" width="120"></el-table-column>
-								<el-table-column prop="systemsResult" label="系统审方结果" align="center" width="120"></el-table-column>
-								<el-table-column prop="hospitalNumber" label="住院号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
-								<el-table-column prop="patientID" label="病人编号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
+								<el-table-column prop="bedNumber" label="床号" align="center"></el-table-column>
+								<el-table-column prop="patientsName" label="患者" align="center"></el-table-column>
+								<el-table-column prop="createTime" label="接收时间" align="center" width="150"></el-table-column>
+								<el-table-column prop="endTime" label="停止日期" align="center" width="150"></el-table-column>
+								<el-table-column prop="startTime" label="开始日期" align="center" width="150"></el-table-column>
+								<el-table-column prop="checkStatusHis" label="系统审方结果" align="center" width="120"></el-table-column>
+								<el-table-column prop="beInHospitalId" label="住院号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
+								<el-table-column prop="patientCodeHis" label="病人编号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
 								<el-table-column fixed="right" label="操作" width="120" align="center">
 									<template slot-scope="scope">
 										<el-button
 											type="text"
 											size="small">
-											<span class="text-default" @click="view(scope.$index,scope.row)">查看</span>
+											<span class="text-default" @click="viewTable(scope.$index,scope.row)">查看</span>
 										</el-button>
 									</template>
 								</el-table-column>
@@ -102,50 +127,55 @@
 					<p class="dialog-tip">处方信息</p>
 					<div class="view-info">
 						<span>病区：</span>
-						<span class="info-span">{{form.ward}}</span>
+						<span class="info-span">{{form.departmentWardName}}</span>
 						<span>开始时间：</span>
-						<span class="info-span">{{form.startDate}}</span>
+						<span class="info-span">{{form.startTime}}</span>
 						<span>停止时间：</span>
-						<span class="info-span">{{form.stopDate}}</span>
+						<span class="info-span">{{form.endTime}}</span>
 						<span>医生：</span>
-						<span class="info-span">{{form.patient}}</span>
+						<span class="info-span">{{form.userName}}</span>
 						<span>频次：</span>
 						<span class="info-span">{{form.frequency}}</span>
 					</div>
 					<div class="view-info">
 						<span>患者：</span>
-						<span class="info-span">{{form.patient}}</span>
+						<span class="info-span">{{form.patientsName}}</span>
 						<span>性别：</span>
-						<span class="info-span">女</span>
+						<span class="info-span" v-if="form.gander==0">女</span>
+						<span class="info-span" v-else-if="form.gander==1">男</span>
 						<span>年龄：</span>
-						<span class="info-span">87</span>
+						<span class="info-span">{{form.bornDay}}</span>
 						<span>身高：</span>
-						<span class="info-span">160CM</span>
+						<span class="info-span">{{form.height}}CM</span>
 						<span>体重：</span>
-						<span class="info-span">60KG</span>
+						<span class="info-span">{{form.weight}}KG</span>
 						<span>床号：</span>
-						<span class="info-span">{{form.bed}}</span>
+						<span class="info-span">{{form.bedNumber}}</span>
 						<span>住院号：</span>
-						<span class="info-span">{{form.hospitalNumber}}</span>
+						<span class="info-span">{{form.id}}</span>
 					</div>
-				  <el-table :data="gridData" class="dialog-table">
-				    <el-table-column property="name" label="药品" align="center"></el-table-column>
-				    <el-table-column property="specification" label="规格" align="center"></el-table-column>
+				  <el-table :data="form.docAdviceDetailsList" class="dialog-table">
+				    <el-table-column property="content" label="医嘱内容" align="center" :show-overflow-tooltip="true"></el-table-column>
+				    <el-table-column property="spec" label="规格" align="center"></el-table-column>
 				    <el-table-column property="dose" label="剂量" align="center"></el-table-column>
 				  </el-table>
 					<p class="dialog-tip">系统审方结果</p>
 					<div class="opinion-area">
-						<div class="opinion-ok" v-if="form.systemsResult == 0">通过</div>
-						<div class="option-no" v-else>
-							<div class="no-tip">相互作用</div>
-							<div class="no-desc">
-								描述：两药物同时使用时可发生体内的药物相互作用，使药理效应增强或降低。
+						<template v-if="form.systemCheckResult.executeType == 0">
+							<!-- <div class="opinion-ok">未通过</div> -->
+							<div class="option-no" >
+								<div class="no-tip">{{form.systemCheckResult.censorItem}}</div>
+								<div class="no-desc">
+									{{form.systemCheckResult.description}}
+								</div>
 							</div>
-						</div>
+						</template>
+						<div class="opinion-ok" v-else-if="form.systemCheckResult.executeType == 1">通过</div>
 					</div>
 					<p class="dialog-tip">人工审方结果</p>
 					<div class="opinion-area">
-						<div class="opinion-ok">通过</div>
+						<div class="opinion-ok" v-if="form.personCheckResult.executeType == 0">未通过</div>
+						<div class="opinion-ok" v-else-if="form.personCheckResult.executeType == 1">通过</div>
 					</div>
 				</el-dialog>
 		</el-row>
@@ -162,65 +192,79 @@
 				currentPage: 1,
 				length: 15,
 				total: 400,
+				// 科室选择
+				departmentList: [],
+				// 搜索form
 				searchForm: {
 					searchData: '',
-					code: ''
+					code: '',
+					checkStatus: '',
+					drugType: '',
+					departmentName: ''
 				},
-				gridData: [{
-					name: '依托泊苷针（恒瑞）',
-					specification: '5ml；0.1mg',
-					dose: '0.1mg'
-				},{
-					name: '依托泊苷针（恒瑞）',
-					specification: '5ml；0.1mg',
-					dose: '0.1mg'
-				},],
-				form: {
-					medicalOrderNumber: '636482475',
-					status: '执行中',
-					type: '化',
-					frequency: 'QD',
-					ward: '血液内科一',
-					bed: '25',
-					patient: '郭磊',
-					receiveTime: '2020/5/18 15:09',
-					stopDate: '2020/5/18 15:09',
-					startDate: '2020/5/18 11:16',
-					systemsResult: '0',
-					hospitalNumber: 'ZY010003870820',
-					patientID: '0003870820',
-				},						
-				tableData: [{
-						medicalOrderNumber: '636482475',
-						status: '执行中',
-						type: '化',
-						frequency: 'QD',
-						ward: '血液内科一',
-						bed: '25',
-						patient: '郭磊',
-						receiveTime: '2020/5/18 15:09',
-						stopDate: '2020/5/18 15:09',
-						startDate: '2020/5/18 11:16',
-						systemsResult: '0',
-						hospitalNumber: 'ZY010003870820',
-						patientID: '0003870820',
-					},{
-						medicalOrderNumber: '637386470',
-						status: '已停止',
-						type: '营',
-						frequency: 'PRN',
-						ward: 'ICU',
-						bed: '27',
-						patient: '程建功',
-						receiveTime: '2020/5/19 10:43',
-						stopDate: '',
-						startDate: '2020/5/19 9:39',
-						systemsResult: '5',
-						hospitalNumber: 'ZY010003853916',
-						patientID: '0003853916',
-					},										
+				// 处方状态list
+				checkStatusList: [
+					{name: '未审', id: 1},
+					{name: '通过', id: 2},
+					{name: '未通过', id: 3},
+					{name: '已停', id: 4},
+					{name: '暂停', id: 5},
 				],
+				// 药品分类list
+				drugTypeList: [
+					{name: '普', id: 1},
+					{name: '抗', id: 2},
+					{name: '化', id: 3},
+					{name: '营', id: 4},
+					{name: '中', id: 5},
+				],
+				form: {
+					departmentWardName: "",
+					startTime: "",
+					endTime: "",
+					userName: "",
+					frequency: "",
+					patientsName: "",
+					gander: "",
+					bornDay: "",
+					height: "",
+					weight: "",
+					bedNumber: "",
+					id: "",
+					docAdviceDetailsList: [],
+				  systemCheckResult: {
+						executeType: '',
+						censorItem: '',
+						description: ''
+					},
+					personCheckResult: {
+						executeType: ''
+					}
+				},						
+				tableData: [],
+				// excel数据
+				column: [
+					{title:'序号',key:'index'},
+					{title:'医嘱号',key:'id'},
+					{title:'状态',key:'checkStatusName'},
+					{title:'分类',key:'drugTypeName'},
+					{title:'频次',key:'frequency'},
+					{title:'病区',key:'ward'},
+					{title:'床号',key:'bedNumber'},
+					{title:'患者',key:'patientsName'},
+					{title:'接收时间',key:'createTime'},
+					{title:'停止日期',key:'endTime'},
+					{title:'开始日期',key:'startTime'},
+					{title:'系统审方结果',key:'checkStatusHis'},
+					{title:'住院号',key:'beInHospitalId'},
+					{title:'病人编号',key:'patientCodeHis'},
+				],
+				docAdviceId: '',//处方医嘱id用来查询
 			}
+		},
+		mounted() {
+			this.getDepartment();
+			this.initTable();
 		},
 		methods: {
 			// 表格隔行颜色设置
@@ -232,26 +276,135 @@
 			  }
 			  return '';
 			},
+			// 获取部门信息
+			getDepartment() {
+				let apiurl = this.api.selectDepartmentListPage+'?page=1&length=10000';
+				if(this.searchForm.departmentName != '') {
+					apiurl += '&departmentName='+this.searchForm.departmentName;
+				}
+				this.common.getAxios(apiurl, this.returnDepartment);
+			},
+			returnDepartment(res) {
+				if(res.data.status) {
+					this.departmentList = res.data.data.list;
+				} else {
+					this.$message.error(res.data.msg);
+				}
+			},
+			selDepartment(departmentName) {
+				this.searchForm.departmentName = departmentName;
+				this.initTable();
+			},
+			// 初始化table
+			initTable() {
+				this.page = 1;
+				this.getTable();
+			},
+			// 获取table信息
+			getTable() {
+				let apiurl = this.api.selectDocAdviceDetailsList+'?page='+this.page+'&length='+this.length;
+				if(this.searchForm.checkStatus != '') {
+					apiurl += '&checkStatus='+this.searchForm.checkStatus;
+				}
+				if(this.searchForm.drugType != '') {
+					apiurl += '&drugType='+this.searchForm.drugType;
+				}
+				if(this.searchForm.departmentName != '') {
+					apiurl += '&departmentName='+this.searchForm.departmentName;
+				}
+				if(this.searchForm.searchData != '') {
+					apiurl += '&startTime='+this.searchForm.searchData[0]+'&endTime='+this.searchForm.searchData[1];
+				}
+				this.common.getAxios(apiurl, this.returnTable);
+			},
+			returnTable(res) {
+				var list = res.data.data.list;
+				for(var i in list) {
+					list[i].startTime = this.moment(list[i].startTime).format("YYYY-MM-Do HH:mm:ss");
+					list[i].endTime = this.moment(list[i].endTime).format("YYYY-MM-Do HH:mm:ss");
+				}
+				this.tableData = res.data.data.list;
+				this.total = res.data.data.total;
+			},
 			// 序号设置
 			indexMethod(index) {
 			  return (this.page - 1) * 10 + index + 1;
 			},
 			// 数据size改变
 			handleSizeChange(val) {
-			  console.log(`每页 ${val} 条`);
+				this.length = val;
+				this.getTable();
 			},
 			// 页数改变
 			handleCurrentChange(val) {
-				console.log(`当前页: ${val}`);
+				this.page = val;
+				this.getTable();
 			},
 			// 查看
-			view(index, row) {
+			viewTable(index, row) {
 				let _this = this;
-				_this.dialogFormVisible = true;
-				// 回显数据
-				_this.$nextTick(function(){
-					_this.form = row;
-				})
+				this.docAdviceId = row.id;
+				this.getDesc();
+			},
+			// 获取处方详情
+			getDesc() {
+				let apiurl = this.api.selectDocAdviceDetailsListOther+'?docAdviceId='+this.docAdviceId;
+				this.common.getAxios(apiurl, this.returnDesc);
+			},
+			returnDesc(res) {
+				console.log(res)
+				this.form = res.data.data.docAdviceInfoVO;
+				this.form.systemCheckResult = res.data.data.systemCheckResult;
+				this.form.personCheckResult = res.data.data.personCheckResult;
+				this.dialogFormVisible = true;
+			},
+			// excel导出打印
+			downloadExcel() {
+				let apiurl = this.api.selectDocAdviceDetailsListPrint+'?page=1';
+				if(this.searchForm.checkStatus != '') {
+					apiurl += '&checkStatus='+this.searchForm.checkStatus;
+				}
+				if(this.searchForm.drugType != '') {
+					apiurl += '&drugType='+this.searchForm.drugType;
+				}
+				if(this.searchForm.departmentName != '') {
+					apiurl += '&departmentName='+this.searchForm.departmentName;
+				}
+				if(this.searchForm.searchData != '') {
+					apiurl += '&startTime='+this.searchForm.searchData[0]+'&endTime='+this.searchForm.searchData[1];
+				}
+				this.common.getAxios(apiurl, this.returnDownloadExcel);
+			},
+			returnDownloadExcel(res) {
+				if(res.data.status) {
+					let list = res.data.data;
+					for(var i in list) {
+						list[i].index = Number(i) + 1;
+						if(list[i].checkStatus==1) {
+							list[i].checkStatusName = '未审';
+						} else if(list[i].checkStatus==2) {
+							list[i].checkStatusName = '通过';
+						} else if(list[i].checkStatus==3) {
+							list[i].checkStatusName = '未通过';
+						} else if(list[i].checkStatus==4) {
+							list[i].checkStatusName = '已停';
+						} else if(list[i].checkStatus==5) {
+							list[i].checkStatusName = '暂停';
+						}
+						if(list[i].drugType==1) {
+							list[i].drugTypeName = '普';
+						} else if(list[i].drugType==2) {
+							list[i].drugTypeName = '抗';
+						} else if(list[i].drugType==3) {
+							list[i].drugTypeName = '化';
+						} else if(list[i].drugType==4) {
+							list[i].drugTypeName = '营';
+						} else if(list[i].drugType==5) {
+							list[i].drugTypeName = '中';
+						}
+					}
+					this.exportExcel.export2Excel(this.column, list, "处方列表");
+				}
 			}
 		}
 	}
@@ -301,9 +454,10 @@
 	.staff-ul li {
 		line-height: 2.8rem;
 		font-size: 1.4rem;
+		cursor:pointer;
 	}
 	.input-tip{
-		margin-left: 2rem;
+		margin-left: 1rem;
 	}
 	.view-info{
 		font-size: 1.2rem;
@@ -350,5 +504,8 @@
 		color: #333333;
 		font-size: 1.2rem;
 		margin-top: 1rem;
+	}
+	.search-btn:first-child{
+		margin-bottom: 1rem;
 	}
 </style>

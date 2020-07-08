@@ -1,68 +1,79 @@
 <template>
 	<div class="all">
-		<el-row class="all-row">
-			<el-col :span='3' class="nav-area">
-				<div>logo</div>
-				<div class="web-title">移动药师工作站</div>
-				<el-menu default-active="1-4-1" 
-				class="el-menu-vertical-demo my-menu" 
-				:collapse="isCollapse"
-				active-text-color="#fff">
-				  <el-submenu :index="list.index" v-for="(list,index) in navList">
-				    <template slot="title">
-							<div class="nav-list">
-								<!-- <img class="nav-pic" :src="list.icon" alt=""> -->
-								<i class="nav-pic" :class="list.icon"></i>
-								<p class="nav-text">{{list.name}}</p>
-							</div>
-				    </template>
-				    <el-menu-item-group>
-				      <el-menu-item 
-							 v-for="(children,childrenIndex) in list.children" 
-							 :key="childrenIndex"
-							 :index="children.index" 
-							 @click="goPath(children.path)">{{children.name}}</el-menu-item>
-						</el-menu-item-group>
-				  </el-submenu>
-				</el-menu>
-			</el-col>
-			<el-col :span='21' class="main-area">
-				<div style="height: 100%;">
-					
-					<el-container direction="vertical">
-						<el-header><div class="header-area">
-							<!-- 窗口导航 -->
-							<div class="window-nav">
-								<!-- <p>123</p> -->
-							</div>
-							<div class="user-info">
-								<div class="personal">
-									<img class="user-pic" src="../assets/img/user.png" alt="">
-									<p class="user-tip">李医生</p>
-								</div>
-								<div class="hospital">
-									<img class="user-pic" src="../assets/img/hospital.png" alt="">
-									<p class="user-tip">河南郑州医科大学附属医院</p>
-								</div>
-							</div>
+		<el-container>
+		  <el-header>
+				<div class="header-area">
+					<div class="web-title">
+						<img src="../assets/img/logo.png" alt="">
+					</div>
+					<div class="user-info">
+						<div class="personal">
+							<img class="user-pic" src="../assets/img/user.png" alt="">
+							<p class="user-tip">李医生</p>
 						</div>
-						</el-header>
-						<el-main>
-							<router-view />
-							
-						</el-main>
-					</el-container>
+						<div class="hospital">
+							<img class="user-pic" src="../assets/img/hospital.png" alt="">
+							<p class="user-tip">河南郑州医科大学附属医院</p>
+						</div>
+					</div>
 				</div>
-				
-				
-			</el-col>
-		</el-row>
+			</el-header>
+		  <el-container>
+		    <el-row class="all-row">
+		    	<el-col :span='2' class="nav-area">
+		    		
+		    		<el-menu default-active="1-4-1" 
+		    		class="el-menu-vertical-demo my-menu" 
+		    		:collapse="isCollapse"
+		    		active-text-color="#fff">
+		    		  <el-submenu :index="list.index" v-for="(list,index) in navList">
+		    		    <template slot="title">
+		    					<div class="nav-list">
+		    						<!-- <img class="nav-pic" :src="list.icon" alt=""> -->
+		    						<i class="nav-pic" :class="list.icon"></i>
+		    						<p class="nav-text">{{list.name}}</p>
+		    					</div>
+		    		    </template>
+		    		    <el-menu-item-group>
+		    		      <el-menu-item 
+		    					 v-for="(children,childrenIndex) in list.children" 
+		    					 :key="childrenIndex"
+		    					 :index="children.index" 
+		    					 @click="goPath(children.path,children)">{{children.name}}</el-menu-item>
+		    				</el-menu-item-group>
+		    		  </el-submenu>
+		    		</el-menu>
+		    	</el-col>
+		    	<el-col :span='22' class="main-area">
+		    		<div style="height: 100%;">
+		    			
+		    			<el-container direction="vertical">
+		    				
+		    				<el-main>
+		    					<!-- <router-view /> -->
+		    					<keep-alive>
+		    							<router-view v-if="$route.meta.keepAlive" />
+		    					</keep-alive>
+		    					
+		    					<router-view v-if="!$route.meta.keepAlive" />
+		    				</el-main>
+		    			</el-container>
+		    		</div>
+		    		
+		    		
+		    	</el-col>
+		    </el-row>
+		  </el-container>
+		</el-container>
+		
 	</div>
 </template>
 
 <script>
+	import windowNav from '../template/windowNav.vue'
 	export default{
 		name: 'index',
+		components: {windowNav},
 		data() {
 			return {
 				isCollapse: true,
@@ -129,20 +140,68 @@
 						index: '3-6',
 						path: 'ADRtestRecords'
 					}]
+				},{
+					name: '日常管理',
+					index: '4',
+					icon: 'el-icon-tickets',
+					children: [{
+						name: '排班',
+						index: '4-1',
+						path: 'shiftAdmin'
+					},{
+						name: '监护等级',
+						index: '4-2',
+						path: 'lavelAdmin'
+					}]
+				},{
+					name: '药学交班',
+					index: '5',
+					icon: 'el-icon-tickets',
+					children: [
+					// 	{
+					// 	name: '排班表',
+					// 	index: '5-1',
+					// 	path: 'scheduleAdmin'
+					// },
+					{
+						name: '交班',
+						index: '5-2',
+						path: 'reliefAdmin'
+					}]
 				}
 					     
-				]
+				],
+				windowList:[]
 			}
 		},
 		methods: {
-			// changeIcon(key, keyPath) {
-			// 	console.log(key, keyPath);
-			// 	let navList = this.navList;
-			// 	// this.navList.navList = true;
-			// }
 			//前往页面
-			goPath(path) {
+			goPath(path,children) {
+				let _this = this;
 				this.$router.push(path);
+				// let windowList = _this.windowList;
+				// windowList.map((item)=>{
+				// 	item.active='window-item window-no';
+				// })
+				// children.active='window-item';
+				// if(windowList.length != 0) {
+				// 	let isExit = windowList.find((list) => list.path==path)
+				// 	if(isExit == undefined) {
+				// 		_this.windowList.push(children)
+				// 	} else {
+				// 		console.log(isExit)
+				// 		windowList.forEach((item)=>{
+				// 			if(item.path == path) {
+				// 				item.active='window-item';
+				// 			}
+				// 			// console.log(item)
+				// 		})
+				// 		_this.windowList = windowList;
+				// 	}
+				// } else {
+				// 	this.windowList.push(children)
+				// }
+				// console.log('windowList',_this.windowList)
 			}
 		}
 	}
@@ -154,11 +213,12 @@
 	}
 	.all-row{
 		height: 100%;
+		width: 100%;
 	}
 	.nav-area{
-		height: 100%;
+		height: calc(100% - 7rem);
 		position: fixed;
-		top: 0;
+		top: 7rem;
 		left: 0;
 	}
 	.main-area{
@@ -172,11 +232,13 @@
 		border-right-width: 0rem;
 	}
 	.web-title{
-		font-size: 2rem;
+		font-size: 1.5rem;
 		font-weight: bold;
 		text-align: center;
-		margin-bottom: 2rem;
+		margin-left: 1.4rem;
 		letter-spacing: 0.1rem;
+		height: 7rem;
+    display: inline-block;
 	}
 	.my-menu{
 		background: transparent;
@@ -192,20 +254,20 @@
 		padding: 0rem!important;
 	}
 	.nav-list{
-		padding-top: 2.3rem;
-		height: 7.5rem;
-		width: 10.7rem;
+		padding-top: 1.3rem;
+		height: 6.5rem;
+		width: 8.7rem;
 		background: #fff;
 		border-radius: 1rem;
 		text-align: center;
 	}
 	.el-submenu,.single-menu{
 		margin: 0 auto;
-		margin-bottom: 2rem;
-		width: 10.7rem;
+		margin-bottom: 1rem;
+		width: 8.7rem;
 		padding-left: 0;    
 		overflow: hidden;
-    padding-bottom: 2.3rem;
+    padding-bottom: 1.3rem;
 		border-radius: 1rem;
 	}
 	.nav-pic{
@@ -224,9 +286,12 @@
 	.el-menu--popup-right-start{
 		border-radius: 1rem;
 		padding: 0;
-		margin-left: 2rem;
+		margin-left: 0.5rem;
 		margin-right: 0;
 		overflow: hidden;
+	}
+	.el-menu--popup{
+		min-width: 13rem;
 	}
 	.el-menu-item-group__title{
 		padding: 0rem !important;
@@ -234,6 +299,8 @@
 	.el-menu-item-group .el-menu-item{
 		padding: 0rem !important;
 		text-align: center;
+		height: 3.8rem;
+		line-height: 3.8rem;
 	}
 	.single-menu:active .nav-list {
 		background: #6791E5;
@@ -296,10 +363,11 @@
 	.user-info{
 		position: absolute;
 		right: 4rem;
+		display: inline-block;
 	}
 	.header-area{
 	}
-	.window-nav{
+	/* .window-nav{
 		
-	}
+	} */
 </style>

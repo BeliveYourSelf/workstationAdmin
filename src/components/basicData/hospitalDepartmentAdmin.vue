@@ -1,5 +1,9 @@
 <template>
 	<div class="con-area">
+		<el-breadcrumb separator-class="el-icon-arrow-right">
+		  <el-breadcrumb-item>基本数据管理</el-breadcrumb-item>
+		  <el-breadcrumb-item>科室</el-breadcrumb-item>
+		</el-breadcrumb>
 		<div class="width-style">
 			<!-- 搜索区域 -->
 			<div class="search-area">
@@ -9,12 +13,13 @@
 						<el-input
 							class="input-width"
 							placeholder="请输入科室名称"
-							v-model="searchForm.name"
-							clearable>
+							v-model="searchForm.departmentName"
+							clearable
+							 @keyup.enter.native="initTable">
 						</el-input>
 					</el-col>
 					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary" icon="el-icon-search">查询</el-button>
+						<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -29,10 +34,10 @@
 						</el-table-column>
 						<el-table-column prop="code" label="编码" align="center"></el-table-column>
 						<el-table-column prop="departmentName" label="科室名称" align="center"></el-table-column>
-						<el-table-column prop="abbreviation" label="简称" align="center"></el-table-column>
-						<el-table-column prop="pinyin" label="拼音码" align="center"></el-table-column>
-						<el-table-column prop="group" label="组别" align="center"></el-table-column>
-						<el-table-column prop="sortNum" label="科室排序" align="center"></el-table-column>
+						<el-table-column prop="simpleName" label="简称" align="center"></el-table-column>
+						<el-table-column prop="pinyinCode" label="拼音码" align="center"></el-table-column>
+						<el-table-column prop="departmentGroupName" label="组别" align="center"></el-table-column>
+						<el-table-column prop="serialNumber" label="科室排序" align="center"></el-table-column>
 						<el-table-column fixed="right" label="操作" width="120" align="center">
 							<template slot-scope="scope">
 								<el-button
@@ -41,11 +46,10 @@
 									<span class="text-default" @click="editDepartment(scope.$index,scope.row)">编辑</span>
 								</el-button>
 								<el-button
-									@click.native.prevent="deleteRow(scope.$index, tableData)"
 									type="text"
 									size="small">
-									<span v-if="scope.row.status == 1" class="text-my-gray">冻结</span>
-									<span v-else-if="scope.row.status == 2" class="text-orange">解冻</span>
+									<span v-if="!scope.row.status" class="text-my-gray" @click="setTable(scope.$index, scope.row,'true')">冻结</span>
+									<span v-else-if="scope.row.status" class="text-orange" @click="setTable(scope.$index, scope.row,'false')">解冻</span>
 								</el-button>
 							</template>
 						</el-table-column>
@@ -73,20 +77,34 @@
 				  <el-input v-model="editForm.code" autocomplete="off" disabled></el-input>
 				</el-form-item>
 				<el-form-item label="简称:" :label-width="formLabelWidth">
-				  <el-input v-model="editForm.abbreviation" autocomplete="off"></el-input>
+				  <el-input v-model="editForm.simpleName" autocomplete="off"></el-input>
 				</el-form-item>
 				<el-form-item label="拼音码:" :label-width="formLabelWidth">
-				  <el-input v-model="editForm.pinyin" autocomplete="off"></el-input>
+				  <el-input v-model="editForm.pinyinCode" autocomplete="off"></el-input>
 				</el-form-item>
+				<!-- 123 可以自定义下拉框 -->
 				<el-form-item label="组别:" :label-width="formLabelWidth">
-				  <el-input v-model="editForm.group" autocomplete="off"></el-input>
+				  <!-- <el-input v-model="editForm.group" autocomplete="off"></el-input> -->
+					<el-select
+					    v-model="editForm.departmentGroupName"
+					    filterable
+					    allow-create
+					    default-first-option
+					    placeholder="请选择组别">
+					    <el-option
+					      v-for="item in groupList"
+					      :key="item.name"
+					      :label="item.name"
+					      :value="item.name">
+					    </el-option>
+					  </el-select>
 				</el-form-item>
 				<el-form-item label="科室排序:" :label-width="formLabelWidth">
-				  <el-input v-model="editForm.sortNum" autocomplete="off"></el-input>
+				  <el-input v-model="editForm.serialNumber" autocomplete="off"></el-input>
 				</el-form-item>
 		  </el-form>
 		  <div slot="footer" class="dialog-footer">
-		    <el-button type="primary" @click="clearForm">确 定</el-button>
+		    <el-button type="primary" @click="saveEdit">确 定</el-button>
 		    <el-button @click="clearForm">取 消</el-button>
 		  </div>
 		</el-dialog>
@@ -101,41 +119,37 @@
 				page: 1,
 				currentPage: 1,
 				length: 15,
-				total: 400,
+				total: 0,
 				searchForm: {
-					name: ''
+					departmentName: ''
 				},
-				tableData: [{
-						code:'767554',
-						departmentName:'呼吸内科',
-						abbreviation:'简称',
-						pinyin:'HUGCGH',
-						group:'组别',
-						sortNum:10,
-						status:1,
-					},{
-						code:'767554',
-						departmentName:'呼吸内科',
-						abbreviation:'简称',
-						pinyin:'HUGCGH',
-						group:'组别',
-						sortNum:20,
-						status:2,
-					},
-				],
+				tableData: [],
 				dialogFormVisible: false,
 				// 编辑表单
 				editForm: {
 					code:'',
 					departmentName:'',
-					abbreviation:'',
-					pinyin:'',
-					group:'',
-					sortNum:'',
+					simpleName:'',
+					pinyinCode:'',
+					departmentGroupName:'',
+					serialNumber:'',
 					status:'',
 				},
+				groupList: [{
+					name: '11',
+					id: '1'
+				},{
+					name: '21',
+					id: '2'
+				},{
+					name: '31',
+					id: '3'
+				}],
 				formLabelWidth: '80px',
 			}
+		},
+		mounted() {
+			this.initTable();
 		},
 		methods: {
 			// 表格隔行颜色设置
@@ -151,32 +165,86 @@
 			indexMethod(index) {
 			  return (this.page - 1) * 10 + index + 1;
 			},
+			// 初始化table
+			initTable() {
+				this.page = 1;
+				this.getTable();
+			},
+			// 获取table信息
+			getTable() {
+				let apiurl = this.api.selectDepartmentListPage+'?page='+this.page+'&length='+this.length;
+				if(this.searchForm.departmentName != '') {
+					apiurl += '&departmentName='+this.searchForm.departmentName;
+				}
+				this.common.getAxios(apiurl, this.returnTable);
+			},
+			returnTable(res) {
+				if(res.data.status) {
+					this.tableData = res.data.data.list;
+					this.total = res.data.data.total;
+				} else {
+					this.$message.error(res.data.msg);
+				}
+			},
 			// 数据size改变
 			handleSizeChange(val) {
-			  console.log(`每页 ${val} 条`);
+				this.length = val;
+				this.getTable();
 			},
 			// 页数改变
 			handleCurrentChange(val) {
-				console.log(`当前页: ${val}`);
+				this.page = val;
+				this.getTable();
 			},
 			// 冻结or解冻
-			deleteRow(index,rows) {
-				let _this = this;
-				let tableData = _this.tableData;
-				if(tableData[index].status == 1) {
-					_this.tableData[index].status = 2;
-				} else if(tableData[index].status == 2) {
-					_this.tableData[index].status = 1;
-				}
+			setTable(index,row,type) {
+				let apiurl = this.api.freezeDepartment+'?departmentId='+row.id+'&freezeStatus='+type;
+				let data = {};
+				this.common.putAxios(apiurl, data, this.returnSet);
+			},
+			returnSet(res) {
+				this.$message.success(res.data.msg);
+				this.getTable();
 			},
 			// 编辑弹窗
 			editDepartment(index, row) {
 				let _this = this;
 				_this.dialogFormVisible = true;
+				delete row.departmentGroupId;
 				// 回显数据
 				_this.$nextTick(function(){
-					_this.editForm = row;
+					_this.editForm = JSON.parse(JSON.stringify(row));
+					_this.getGroupList();
 				})
+			},
+			// 查看组别集合
+			getGroupList() {
+				let apiurl = this.api.selectDepartmentGroupList;
+				this.common.getAxios(apiurl, this.returnGroupList);
+			},
+			returnGroupList(res) {
+				if(res.data.status) {
+					this.groupList = res.data.data;
+				}
+			},
+			// 保存更新
+			saveEdit() {
+				let apiurl = this.api.updateDepartment;
+				let department = this.editForm;
+				this.common.putAxios(apiurl, department, this.returnSaveEdit);
+			},
+			returnSaveEdit(res) {
+				if(res.data.status) {
+					this.$message({
+						type: 'success',
+						message: '更新成功'
+					});
+					this.$refs['editForm'].resetFields(); //重置表单
+					this.dialogFormVisible = false;
+					this.getTable();
+				} else {
+					this.$message.error(res.data.msg);
+				}
 			},
 			// 重置表单
 			clearForm() {
@@ -189,10 +257,13 @@
 	}
 </script>
 
-<style>
+<style scoped>
 	/* 编辑表单 */
 	.hospital-edit{
 		width: 50%;
 		margin: 0 auto;
+	}
+	.el-select{
+		width: 100%;
 	}
 </style>

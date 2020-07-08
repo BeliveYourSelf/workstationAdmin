@@ -1,5 +1,9 @@
 <template>
 	<div class="con-area">
+		<el-breadcrumb separator-class="el-icon-arrow-right">
+		  <el-breadcrumb-item>查询</el-breadcrumb-item>
+		  <el-breadcrumb-item>工作量</el-breadcrumb-item>
+		</el-breadcrumb>
 		<el-row class="my-row">
 			<el-col :span="4" class="staff-col">
 				<div class="search-staff">

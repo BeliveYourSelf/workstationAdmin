@@ -1,20 +1,33 @@
 <template>
 	<div class="con-area">
-
+		<el-breadcrumb separator-class="el-icon-arrow-right">
+		  <el-breadcrumb-item>查询</el-breadcrumb-item>
+		  <el-breadcrumb-item>监护记录</el-breadcrumb-item>
+		</el-breadcrumb>
 		<div class="width-style">
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
 					<el-col :span="20">
-						<el-date-picker v-model="searchForm.searchData" type="daterange" range-separator="至" start-placeholder="开始日期"
-						 end-placeholder="结束日期" class="data-picker-set">
+						<el-date-picker 
+						 v-model="searchForm.searchData" 
+						 type="daterange" 
+						 range-separator="至" 
+						 start-placeholder="开始日期"
+						 end-placeholder="结束日期" 
+						 class="data-picker-set"
+						 format="yyyy 年 MM 月 dd 日"
+						 value-format="yyyy/MM/dd HH:mm:ss">
 						</el-date-picker>
 						<span class="input-tip">药师姓名：</span>
-						<el-input class="input-width" placeholder="药师姓名" v-model="searchForm.name" clearable>
+						<el-input class="input-width" placeholder="药师姓名" 
+							v-model="searchForm.pharmacistName" clearable
+							@keyup.enter.native="initTable">
 						</el-input>
 					</el-col>
 					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary">确认</el-button>
+						<!-- <el-button class="search-btn" type="primary">确认</el-button> -->
+						<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -27,13 +40,21 @@
 				 :header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
 					<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
 					</el-table-column>
-					<el-table-column prop="docName" label="药师姓名" align="center"></el-table-column>
-					<el-table-column prop="date" label="查房时间" align="center"></el-table-column>
-					<el-table-column prop="userName" label="患者姓名" align="center"></el-table-column>
-					<el-table-column prop="room" label="科室" align="center"></el-table-column>
-					<el-table-column prop="bed" label="床号" align="center" :show-overflow-tooltip="true"></el-table-column>
-					<el-table-column prop="lavel" label="监护级别" align="center"></el-table-column>
-					<el-table-column prop="reason" label="病因" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="pharmacistName" label="药师姓名" align="center"></el-table-column>
+					<el-table-column prop="modifyTime" label="修改时间" align="center" width="180"></el-table-column>
+					<el-table-column prop="patientCodeHis" label="患者编码" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="patientName" label="患者姓名" align="center"></el-table-column>
+					<el-table-column prop="age" label="患者年龄" align="center"></el-table-column>
+					<el-table-column label="患者性别" align="center">
+						<template slot-scope="scope">
+							<span v-if="scope.row.patientGander">男</span>
+							<span v-else>女</span>
+						</template>
+					</el-table-column>
+					<el-table-column prop="departmentWardName" label="科室" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="bedNumber" label="床号" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="monitorLevelName" label="监护级别" align="center"></el-table-column>
+					<el-table-column prop="monitorRecord" label="监护记录" align="center" :show-overflow-tooltip="true"></el-table-column>
 
 				</el-table>
 				<div class="block page-area">
@@ -64,8 +85,7 @@
 				total: 400,
 				searchForm: {
 					searchData: '',
-					code: '',
-					name: ''
+					pharmacistName: ''
 				},
 				tableData: [{
 					date: '2020-06-12 09:23',
@@ -78,7 +98,31 @@
 				}],
 			}
 		},
+		mounted() {
+			this.initTable();
+		},
 		methods: {
+			// 初始化table
+			initTable() {
+				this.page = 1;
+				this.getTable();
+			},
+			// 获取table信息
+			getTable() {
+				let apiurl = this.api.selectMonitorRecordList+'?page='+this.page+'&length='+this.length;
+				if(this.searchForm.pharmacistName != '') {
+					apiurl += '&pharmacistName='+this.searchForm.pharmacistName;
+				}
+				if(this.searchForm.searchData != '') {
+					apiurl += '&startTime='+this.searchForm.searchData[0]+'&endTime='+this.searchForm.searchData[1];
+				}
+				this.common.getAxios(apiurl, this.returnTable);
+			},
+			returnTable(res) {
+				var list = res.data.data.list;
+				this.tableData = res.data.data.list;
+				this.total = res.data.data.total;
+			},
 			// 表格隔行颜色设置
 			tableRowClassName({
 				row,
@@ -97,11 +141,13 @@
 			},
 			// 数据size改变
 			handleSizeChange(val) {
-				console.log(`每页 ${val} 条`);
+				this.length = val;
+				this.getTable();
 			},
 			// 页数改变
 			handleCurrentChange(val) {
-				console.log(`当前页: ${val}`);
+				this.page = val;
+				this.getTable();
 			},
 		}
 	}

@@ -31,10 +31,11 @@ export default {
 		min-height: calc(100% - 5rem);
 		/* height: calc(100% - 5rem); */
 		background: #fff;
-		border-radius: 3rem;
+		border-radius: 0 3rem 3rem 3rem;
 		width: 100%;
-		padding-top: 3rem;
+		padding-top: 1.5rem;
 		padding-bottom:1.5rem;
+		z-index: 1;
 	}
 	.el-main{
 		/* min-height: calc(100% - 4rem)!important; */
@@ -143,6 +144,9 @@ export default {
 		height: 3rem;
 		line-height: 3rem;
 	}
+	/* .el-select{
+		width: 100%;
+	} */
 	/* 按钮 */
 	.el-button{
 		padding: 0.9rem 2rem;
@@ -150,5 +154,10 @@ export default {
 	}
 	.el-button--text{
 		padding: 0.9rem 0;
+	}
+	
+	.el-breadcrumb{
+		margin-bottom: 1.5rem;
+		margin-left: 2rem;
 	}
 </style>

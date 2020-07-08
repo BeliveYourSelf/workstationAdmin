@@ -1,6 +1,9 @@
 <template>
 	<div class="con-area">
-
+		<el-breadcrumb separator-class="el-icon-arrow-right">
+		  <el-breadcrumb-item>查询</el-breadcrumb-item>
+		  <el-breadcrumb-item>查房记录</el-breadcrumb-item>
+		</el-breadcrumb>
 		<div class="width-style">
 			<!-- 搜索区域 -->
 			<div class="search-area">

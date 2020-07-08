@@ -13,9 +13,58 @@
 			<el-table-column prop="source" label="来源" show-overflow-tooltip align="center"></el-table-column>
 			<el-table-column prop="retreat" label="退方人" show-overflow-tooltip align="center"></el-table-column>
 		</el-table>
+			 <!-- @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')" -->
 		<div class="block page-area">
 			<el-pagination
-			 @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')"
+			 @size-change="handleSizeChangeSolvent"
+			 @current-change="handleCurrentChangeSolvent"
+			 :current-page="currentPageSolvent"
+			 :page-sizes="[5, 10, 15, 50]"
+			 :page-size="lengthSolvent"
+			 layout="total, sizes, prev, pager, next, jumper"
+			 :total="totalSolvent">
+			</el-pagination>
+		</div>
+		<div class="table-name">数量和剂量</div>
+		<el-table
+		  :data="quantityData"
+			ref="quantityData"
+		 >
+			<el-table-column prop="prescriptionNumber" label="处方号" width="150" align="center"></el-table-column>
+			<el-table-column prop="drug" label="药品" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="actingDrug" label="作用药品" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="describe" label="描述" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="source" label="来源" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="retreat" label="退方人" show-overflow-tooltip align="center"></el-table-column>
+		</el-table>
+			 <!-- @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')" -->
+		<div class="block page-area">
+			<el-pagination
+			 @size-change="handleSizeChangeSolvent"
+			 @current-change="handleCurrentChangeSolvent"
+			 :current-page="currentPageSolvent"
+			 :page-sizes="[5, 10, 15, 50]"
+			 :page-size="lengthSolvent"
+			 layout="total, sizes, prev, pager, next, jumper"
+			 :total="totalSolvent">
+			</el-pagination>
+		</div>
+		<div class="table-name">配伍禁忌</div>
+		<el-table
+		  :data="incompatibilityData"
+			ref="incompatibilityData"
+		 >
+			<el-table-column prop="prescriptionNumber" label="处方号" width="150" align="center"></el-table-column>
+			<el-table-column prop="drug" label="药品" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="actingDrug" label="作用药品" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="describe" label="描述" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="source" label="来源" show-overflow-tooltip align="center"></el-table-column>
+			<el-table-column prop="retreat" label="退方人" show-overflow-tooltip align="center"></el-table-column>
+		</el-table>
+			 <!-- @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')" -->
+		<div class="block page-area">
+			<el-pagination
+			 @size-change="handleSizeChangeSolvent"
 			 @current-change="handleCurrentChangeSolvent"
 			 :current-page="currentPageSolvent"
 			 :page-sizes="[5, 10, 15, 50]"
@@ -93,12 +142,8 @@
 		},
 		methods: {
 			// 数据size改变溶媒不适宜
-			handleSizeChangeSolvent(val,type) {
+			handleSizeChangeSolvent(val) {
 			  console.log(`每页 ${val} 条`,type);
-				let length = `this.length${type}`;
-				length = val;
-				// console.log(`this.length${type}`)
-				console.log(this.lengthSolvent)
 			},
 			// 页数改变溶媒不适宜
 			handleCurrentChangeSolvent(val) {
