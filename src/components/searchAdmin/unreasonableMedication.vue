@@ -8,9 +8,18 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
-						<span :class="['un-type',[system?'un-type-active':'']]" @click="switchType('1')">系统审方不合理用药</span>
-						<span :class="['un-type',[people?'un-type-active':'']]" @click="switchType('2')">人工审方不合理用药</span>
+					<el-col :span="4" class="search-btn-area left-col">
+						<el-tooltip class="item" effect="dark" content="导出打印" placement="top-start">
+							<el-button class="el-icon-download" type="primary" @click="downloadExcel"></el-button>
+						</el-tooltip>
+					</el-col>
+					<el-col :span="20" class="right-col">
+						<el-select v-model="searchForm.systemCheckOrPersonCheck" @change="initTable">
+							<el-option v-for="list in systemCheckOrPersonCheckList" 
+								:label="list.name" 
+								:value="list.id" 
+								:key="list.id"></el-option>
+						</el-select>
 						 <el-date-picker
 						  v-model="searchForm.searchData" 
 						  type="daterange" 
@@ -19,16 +28,13 @@
 						  end-placeholder="结束日期" 
 						  class="data-picker-set"
 						  format="yyyy 年 MM 月 dd 日"
-						  value-format="yyyy/MM/dd HH:mm:ss">
+						  value-format="yyyy/MM/dd HH:mm:ss"
+							 @change="initTable">
 						 </el-date-picker>
 						</el-date-picker>
 						<!-- <span class="input-tip">药师姓名：</span>
 						<el-input class="input-width" placeholder="药师姓名" v-model="searchForm.name" clearable>
 						</el-input> -->
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn el-icon-search" type="primary" @click="initTable">查询</el-button>
-						<el-button class="search-btn" type="primary" @click="downloadExcel">导出打印</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -39,22 +45,22 @@
 				 style="width: 100%" 
 				 :row-class-name="tableRowClassName"
 				 :header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-					<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+					<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 					</el-table-column>
-					<el-table-column prop="pharmacistName" label="医师" align="center"></el-table-column>
+					<el-table-column fixed prop="pharmacistName" label="医师" align="center"></el-table-column>
 					<el-table-column prop="incompatibilityCount" label="配伍禁忌" align="center"></el-table-column>
 					<el-table-column prop="interaction" label="相互作用" align="center"></el-table-column>
 					<el-table-column prop="usaged" label="用法用量" align="center"></el-table-column>
 					<el-table-column prop="solventProhibit" label="溶媒限制" align="center"></el-table-column>
-					<el-table-column prop="solventNotSuitable" label="浓度限制" align="center"></el-table-column>
-					<el-table-column prop="countAndDose" label="年龄禁忌" align="center"></el-table-column>
-					<el-table-column prop="solventNotSuitable" label="职业禁忌" align="center"></el-table-column>
-					<el-table-column prop="solventNotSuitable" label="特殊状态禁忌" align="center" width="120"></el-table-column>
-					<el-table-column prop="solventNotSuitable" label="交叉过敏" align="center"></el-table-column>
-					<el-table-column prop="solventNotSuitable" label="疾病禁忌" align="center"></el-table-column>
-					<el-table-column prop="solventNotSuitable" label="其他" align="center"></el-table-column>
-					<el-table-column prop="allCount" label="总计" align="center"></el-table-column>
-					<el-table-column label="操作" width="120" align="center">
+					<el-table-column prop="concentrationLimit" label="浓度限制" align="center"></el-table-column>
+					<el-table-column prop="ageTaboo" label="年龄禁忌" align="center"></el-table-column>
+					<el-table-column prop="occupationalTaboo" label="职业禁忌" align="center"></el-table-column>
+					<el-table-column prop="specialStateTaboo" label="特殊状态禁忌" align="center" width="120"></el-table-column>
+					<el-table-column prop="crossAllergy" label="交叉过敏" align="center"></el-table-column>
+					<el-table-column prop="diseaseTaboo" label="疾病禁忌" align="center"></el-table-column>
+					<el-table-column prop="other" label="其他" align="center"></el-table-column>
+					<el-table-column prop="total" label="总计" align="center"></el-table-column>
+					<el-table-column label="操作" width="120" align="center" fixed="right">
 						<template slot-scope="scope">
 							<el-button
 								type="text"
@@ -88,7 +94,6 @@
 			return {
 				system: true,//系统
 				people: false,//人工
-				systemCheckOrPersonCheck: 1,//1系统2人工
 				page: 1,
 				currentPage: 1,
 				length: 15,
@@ -96,8 +101,13 @@
 				searchForm: {
 					searchData: '',
 					code: '',
-					name: ''
+					name: '',
+					systemCheckOrPersonCheck: 1//1系统2人工
 				},
+				systemCheckOrPersonCheckList: [
+					{name: '系统审方不合理用药',id:1},
+					{name: '人工审方不合理用药',id:2},
+				],
 				tableData: [],
 				// excel数据
 				column: [
@@ -107,14 +117,14 @@
 					{title:'相互作用',key:'interaction'},
 					{title:'用法用量',key:'usaged'},
 					{title:'溶媒限制',key:'solventProhibit'},
-					{title:'浓度限制',key:'solventNotSuitable'},
-					{title:'年龄禁忌',key:'countAndDose'},
-					{title:'职业禁忌',key:'solventNotSuitable'},
-					{title:'特殊状态禁忌',key:'solventNotSuitable'},
-					{title:'交叉过敏',key:'solventNotSuitable'},
-					{title:'疾病禁忌',key:'solventNotSuitable'},
-					{title:'其他',key:'solventNotSuitable'},
-					{title:'总计',key:'allCount'},
+					{title:'浓度限制',key:'concentrationLimit'},
+					{title:'年龄禁忌',key:'ageTaboo'},
+					{title:'职业禁忌',key:'occupationalTaboo'},
+					{title:'特殊状态禁忌',key:'specialStateTaboo'},
+					{title:'交叉过敏',key:'crossAllergy'},
+					{title:'疾病禁忌',key:'diseaseTaboo'},
+					{title:'其他',key:'other'},
+					{title:'总计',key:'total'},
 				],
 			}
 		},
@@ -142,7 +152,7 @@
 				let apiurl = this.api.selectDocAdviceStatistics
 										+'?page='+this.page
 										+'&length='+this.length
-										+'&systemCheckOrPersonCheck='+this.systemCheckOrPersonCheck;
+										+'&systemCheckOrPersonCheck='+this.searchForm.systemCheckOrPersonCheck;
 				if(this.searchForm.searchData != '') {
 					apiurl += '&startTime=' + this.searchForm.searchData[0] + '&endTime=' + this.searchForm.searchData[1];
 				}
@@ -151,19 +161,6 @@
 			returnTable(res) {
 				this.tableData = res.data.data.list;
 				this.total = res.data.data.total;
-			},
-			// 系统or人工
-			switchType(type) {
-				if(type == '1') {
-					this.system = true;
-					this.people = false;
-					this.systemCheckOrPersonCheck = 1;
-				} else if(type == '2') {
-					this.system = false;
-					this.people = true;
-					this.systemCheckOrPersonCheck=2;
-				}
-				this.initTable();
 			},
 			// 表格隔行颜色设置
 			tableRowClassName({
@@ -193,7 +190,7 @@
 			},
 			// 查看
 			view(index, row) {
-				this.$router.push({path: 'unreasonableMedicationView',query: {index: index}})
+				this.$router.push({path: 'unreasonableMedicationView',query: {parmacistId: row.parmacistId}})
 			},
 			// excel导出打印
 			downloadExcel() {

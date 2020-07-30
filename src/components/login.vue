@@ -4,8 +4,8 @@
 		<div class="login-form">
 			<p class="login-tip">登录</p>
 		  <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
-		    <el-form-item prop="userName">
-		      <el-input placeholder="工号" v-model="ruleForm.userName" class="login-input">
+		    <el-form-item prop="number">
+		      <el-input placeholder="工号" v-model="ruleForm.number" class="login-input">
 		        <i slot="prefix" class="el-input__icon el-icon-user"></i>
 		      </el-input>
 		    </el-form-item>
@@ -26,11 +26,11 @@ export default {
   data () {
     return {
       ruleForm: {
-        userName: '', //用户名,
+        number: '', //用户名,
         password: '', //密码
       },
       rules: {
-        userName: [{
+        number: [{
           required: true,
           message: '请输入工号',
           trigger: 'blur'
@@ -46,21 +46,34 @@ export default {
 	methods: {
 		//前往首页
 		userLogin(formName) {
+			let _this = this;
 		  this.$refs[formName].validate((valid) => {
 		    if (valid) {
-		      var data = this.ruleForm;
-					this.$message({
-					  message: '登录成功',
-					  type: 'success'
-					});
-					this.$router.push('index');
+		      let data = _this.ruleForm;
+					let apiurl = _this.api.login;
+					_this.common.postAxios(apiurl, data, _this.reutrnLogin)
+					
 		    } else {
 		      console.log('error submit!!');
 		      return false;
 		    }
 		  });
-		
 		},
+		reutrnLogin(res) {
+			if(res.data.status) {
+				let userId = res.data.data.id;
+				let name = res.data.data.name;
+				sessionStorage.setItem('userId', userId);
+				sessionStorage.setItem('userName', name);
+				this.$message({
+				  message: '登录成功',
+				  type: 'success'
+				});
+				this.$router.push('index');
+			} else {
+				this.$message.error(res.data.msg);
+			}
+		}
 	}
 }
 </script>

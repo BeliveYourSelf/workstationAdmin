@@ -8,16 +8,28 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
-						<el-date-picker v-model="searchForm.searchData" type="daterange" range-separator="至" start-placeholder="开始日期"
-						 end-placeholder="结束日期" class="data-picker-set">
-						</el-date-picker>
-						<span class="input-tip">药师姓名：</span>
-						<el-input class="input-width" placeholder="药师姓名" v-model="searchForm.name" clearable>
-						</el-input>
+					<el-col :span="0" class="search-btn-area">
 					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary">确认</el-button>
+					<el-col :span="24" class="right-col">
+						<el-date-picker
+						 @change="initTable"
+						 v-model="searchForm.searchData" 
+						 type="daterange" 
+						 range-separator="至" 
+						 start-placeholder="开始日期"
+						 end-placeholder="结束日期" 
+						 class="data-picker-set"
+						 format="yyyy 年 MM 月 dd 日"
+						 value-format="yyyy/MM/dd HH:mm:ss">
+						</el-date-picker>
+						<el-input
+						  suffix-icon="el-icon-search"
+							class="margin-left input-width"
+							placeholder="药师/患者/床号/住院号/监护记录"
+							v-model="searchForm.queryCondition"
+							clearable
+							@keyup.enter.native="initTable">
+						</el-input>
 					</el-col>
 				</el-row>
 			</div>
@@ -28,16 +40,16 @@
 				 style="width: 100%" 
 				 :row-class-name="tableRowClassName"
 				 :header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-					<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+					<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 					</el-table-column>
-					<el-table-column prop="docName" label="药师姓名" align="center"></el-table-column>
-					<el-table-column prop="date" label="查房时间" align="center"></el-table-column>
-					<el-table-column prop="userName" label="患者姓名" align="center"></el-table-column>
-					<el-table-column prop="room" label="科室" align="center"></el-table-column>
-					<el-table-column prop="bed" label="床号" align="center" :show-overflow-tooltip="true"></el-table-column>
-					<el-table-column prop="lavel" label="监护级别" align="center"></el-table-column>
-					<el-table-column prop="reason" label="病因" align="center" :show-overflow-tooltip="true"></el-table-column>
-
+					<el-table-column prop="pharmacistName" label="药师姓名" align="center"></el-table-column>
+					<el-table-column prop="createTime" label="查房时间" align="center" width="180"></el-table-column>
+					<el-table-column prop="pharmacistName" label="患者姓名" align="center"></el-table-column>
+					<el-table-column prop="departmentWardName" label="科室" align="center"></el-table-column>
+					<el-table-column prop="bedNumber" label="床号" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="monitorLevelName" label="监护级别" align="center"></el-table-column>
+					<el-table-column prop="pathogenyDetail" label="病因" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="checkRecord" label="备注" align="center" :show-overflow-tooltip="true"></el-table-column>
 				</el-table>
 				<div class="block page-area">
 					<el-pagination 
@@ -67,21 +79,39 @@
 				total: 400,
 				searchForm: {
 					searchData: '',
-					code: '',
-					name: ''
+					queryCondition: ''
 				},
-				tableData: [{
-					date: '2020-06-12 09:23',
-					docName: '王晓红',
-					userName: '王晓雯',
-					room: '心血管内科',
-					bed: 'Z-110',
-					lavel: '一级',
-					reason: '这是一个病因描述这是一个病因描述'
-				}],
+				tableData: [],
 			}
 		},
+		mounted() {
+			this.initTable();
+		},
 		methods: {
+			// 初始化table
+			initTable() {
+				this.page = 1;
+				this.getTable();
+			},
+			// 获取table信息
+			getTable() {
+				let apiurl = this.api.selectWardRoundRecord+'?page='+this.page+'&length='+this.length;
+				if(this.searchForm.queryCondition != '') {
+					apiurl += '&queryCondition='+this.searchForm.queryCondition;
+				}
+				if(this.searchForm.searchData != '') {
+					apiurl += '&startTime='+this.searchForm.searchData[0]+'&endTime='+this.searchForm.searchData[1];
+				}
+				this.common.getAxios(apiurl, this.returnTable);
+			},
+			returnTable(res) {
+				var list = res.data.data.list;
+				for(var i in list) {
+					list[i].createTime = this.moment(list[i].createTime).format("YYYY-MM-Do HH:mm:ss");
+				}
+				this.tableData = list;
+				this.total = res.data.data.total;
+			},
 			// 表格隔行颜色设置
 			tableRowClassName({
 				row,
@@ -100,11 +130,13 @@
 			},
 			// 数据size改变
 			handleSizeChange(val) {
-				console.log(`每页 ${val} 条`);
+				this.length = val;
+				this.getTable();
 			},
 			// 页数改变
 			handleCurrentChange(val) {
-				console.log(`当前页: ${val}`);
+				this.page = val;
+				this.getTable();
 			},
 		}
 	}

@@ -8,8 +8,11 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
-						<el-date-picker 
+					<el-col :span="0" class="search-btn-area">
+					</el-col>
+					<el-col :span="24" class="right-col">
+						<el-date-picker
+						 @change="initTable"
 						 v-model="searchForm.searchData" 
 						 type="daterange" 
 						 range-separator="至" 
@@ -19,15 +22,14 @@
 						 format="yyyy 年 MM 月 dd 日"
 						 value-format="yyyy/MM/dd HH:mm:ss">
 						</el-date-picker>
-						<span class="input-tip">药师姓名：</span>
-						<el-input class="input-width" placeholder="药师姓名" 
-							v-model="searchForm.pharmacistName" clearable
+						<el-input
+						  suffix-icon="el-icon-search"
+							class="input-width margin-left"
+							placeholder="药师/患者/床号/住院号/监护记录"
+							v-model="searchForm.queryCondition"
+							clearable
 							@keyup.enter.native="initTable">
 						</el-input>
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<!-- <el-button class="search-btn" type="primary">确认</el-button> -->
-						<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -38,7 +40,7 @@
 				 style="width: 100%" 
 				 :row-class-name="tableRowClassName"
 				 :header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-					<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+					<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 					</el-table-column>
 					<el-table-column prop="pharmacistName" label="药师姓名" align="center"></el-table-column>
 					<el-table-column prop="modifyTime" label="修改时间" align="center" width="180"></el-table-column>
@@ -51,10 +53,11 @@
 							<span v-else>女</span>
 						</template>
 					</el-table-column>
-					<el-table-column prop="departmentWardName" label="科室" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="departmentWardName" label="科室" align="center" min-width="120" :show-overflow-tooltip="true"></el-table-column>
 					<el-table-column prop="bedNumber" label="床号" align="center" :show-overflow-tooltip="true"></el-table-column>
 					<el-table-column prop="monitorLevelName" label="监护级别" align="center"></el-table-column>
-					<el-table-column prop="monitorRecord" label="监护记录" align="center" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="monitorRecord" label="监护记录" align="center" min-width="180" :show-overflow-tooltip="true"></el-table-column>
+					<el-table-column prop="pathogenyDetail" label="病因" align="center" :show-overflow-tooltip="true"></el-table-column>
 
 				</el-table>
 				<div class="block page-area">
@@ -85,17 +88,9 @@
 				total: 400,
 				searchForm: {
 					searchData: '',
-					pharmacistName: ''
+					queryCondition: ''
 				},
-				tableData: [{
-					date: '2020-06-12 09:23',
-					docName: '王晓红',
-					userName: '王晓雯',
-					room: '心血管内科',
-					bed: 'Z-110',
-					lavel: '一级',
-					reason: '这是一个病因描述这是一个病因描述'
-				}],
+				tableData: [],
 			}
 		},
 		mounted() {
@@ -110,8 +105,8 @@
 			// 获取table信息
 			getTable() {
 				let apiurl = this.api.selectMonitorRecordList+'?page='+this.page+'&length='+this.length;
-				if(this.searchForm.pharmacistName != '') {
-					apiurl += '&pharmacistName='+this.searchForm.pharmacistName;
+				if(this.searchForm.queryCondition != '') {
+					apiurl += '&queryCondition='+this.searchForm.queryCondition;
 				}
 				if(this.searchForm.searchData != '') {
 					apiurl += '&startTime='+this.searchForm.searchData[0]+'&endTime='+this.searchForm.searchData[1];

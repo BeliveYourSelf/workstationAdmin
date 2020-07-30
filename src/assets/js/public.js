@@ -11,6 +11,16 @@ import {
 Vue.use(ElementUi)
 Vue.use(VueAxios, axios)
 export default ({
+	// 权限设置
+	permissionSet: function(index, childrenIndex, permissionList, type) {
+		let selfPermissionList = permissionList[index].menuLevelTwos[childrenIndex].permissions;
+		console.log(selfPermissionList)
+		for(var i in selfPermissionList) {
+			if(selfPermissionList[i].used&&selfPermissionList[i].interfaceProperty==type) {
+				return true;
+			}
+		}
+	},
   getAxios: function(apiurl, callback) {
     const loading = Loading.service({
       lock: true,
@@ -96,6 +106,18 @@ export default ({
         loading.close();
       });
   },
+	judgeIE: function() {
+		// 取得浏览器的userAgent字符串
+		let userAgent = navigator.userAgent;
+		console.log('userAgent',userAgent);
+		// 判断是否为小于IE11的浏览器
+		let isLessIE11 = userAgent.indexOf('compatible') > -1 && userAgent.indexOf('MSIE') > -1;
+		if (isLessIE11) { 
+			return true;// ie11以下
+		} else {
+			return false;
+		}
+	},
   download(name, url) {
     var xmlResquest = new XMLHttpRequest();
     xmlResquest.open("GET", url, true);

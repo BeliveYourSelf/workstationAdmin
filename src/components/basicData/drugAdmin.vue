@@ -8,17 +8,21 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
-						<span class="input-tip">药品编码：</span>
+					<el-col :span="0" class="search-btn-area left-col">
+					</el-col>
+					<el-col :span="24" class="right-col">
+						<el-select v-model="searchForm.drugStatus" class="margin-left" clearable @change="initTable">
+							<el-option label="显示" value="false" key="false"></el-option>
+							<el-option label="隐藏" value="true" key="true"></el-option>
+						</el-select>
 						<el-input
-							class="input-width"
+						  suffix-icon="el-icon-search"
+							class="input-width margin-left"
 							placeholder="请输入药品编码"
 							v-model="searchForm.drugCode"
-							clearable>
+							clearable
+							@keyup.enter.native="initTable">
 						</el-input>
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary" icon="el-icon-search">查询</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -29,27 +33,41 @@
 						style="width: 100%"
 						:row-class-name="tableRowClassName"
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-						<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+						<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
 						<el-table-column prop="drugCode" label="药品编码" align="center" min-width="100" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="drugName" label="药品名称" align="center" min-width="100" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="specification" label="规格" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="drugDose" label="剂量" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="dosageUnit" label="剂量单位" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<!-- <el-table-column prop="mainDose" label="主药剂量" align="center" :show-overflow-tooltip="true"></el-table-column> -->
-						<!-- <el-table-column prop="vehicleDose" label="溶媒剂量" align="center" :show-overflow-tooltip="true"></el-table-column> -->
-						<el-table-column prop="quickCheckCode" label="速查码" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="drugSimplyName" label="药品名称" align="center" min-width="100" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="specDescription" label="规格" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="mainDrugDoseName" label="剂量" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="mainDrugDoseName" label="剂量单位" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<!-- <el-table-column prop="mainDrugDose" label="主药剂量" align="center" :show-overflow-tooltip="true"></el-table-column> -->
+						<!-- <el-table-column prop="menstruumDose" label="溶媒剂量" align="center" :show-overflow-tooltip="true"></el-table-column> -->
 						<el-table-column prop="containerNumber" label="货柜号" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="unitPreparation" label="单位制剂" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="unitPackage" label="包装单位" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column label="单位制剂" align="center" :show-overflow-tooltip="true">
+							<template slot-scope="scope" width="200">
+								<span v-if="scope.row.unitPreparationCategoryName!=''&&scope.row.unitPreparationCategoryName!=undefined">
+									{{scope.row.unitPreparationName}}
+								</span>
+							</template>
+						</el-table-column>
+						<el-table-column prop="smallPackageUnit" label="包装单位" align="center" :show-overflow-tooltip="true"></el-table-column>
 						<!-- <el-table-column prop="drugConsumables" label="药品耗材" align="center" :show-overflow-tooltip="true"></el-table-column> -->
-						<el-table-column prop="drugAttributes" label="药品属性" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="pinyinCode" label="速查码" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="unitPreparationCategoryName" label="药品属性" align="center" :show-overflow-tooltip="true"></el-table-column>
 						<el-table-column fixed="right" label="操作" width="120" align="center">
+							
 							<template slot-scope="scope">
 								<el-button
 									type="text"
+									size="small"
+									v-show="updateSet">
+									<span @click="editDepartment(scope.$index,scope.row)">编辑</span>
+								</el-button>
+								<el-button
+									type="text"
 									size="small">
-									<span class="text-default" @click="editDepartment(scope.$index,scope.row)">编辑</span>
+									<span v-if="!scope.row.status&&hideSet" class="text-my-gray" @click="setTable(scope.$index, scope.row,'true')">隐藏</span>
+									<span v-else-if="scope.row.status&&displaySet" class="text-orange" @click="setTable(scope.$index, scope.row,'false')">显示</span>
 								</el-button>
 							</template>
 						</el-table-column>
@@ -77,131 +95,52 @@
 				page: 1,
 				currentPage: 1,
 				length: 15,
-				total: 400,
+				total: 0,
 				formLabelWidth: '65px',
 				formLabelWidth1: '90px',
 				formLabelWidth2: '75px',
 				// 查询form
 				searchForm: {
-					drugCode: ''
+					drugCode: '',
+					drugStatus: ''
 				},
-				tableData: [{
-						drugCode: '11101050208',//药品编码
-						drugName: '卡全针(脂肪乳氨基酸(17)葡萄糖(19%))',//药品名称
-						specification: '1026ml',//规格
-						drugDose: '1026',//剂量
-						dosageUnit: 'ml',//剂量单位
-						// 123 mainDose: '1026ml',//主药剂量
-						// 123 vehicleDose: '1026ml',//溶媒剂量
-						quickCheckCode: 'ZFRAJS17PTT19ZSY',//速查码
-						containerNumber: '310100',//货柜号
-						unitPreparation: '脂肪乳氨基酸(17)葡萄糖(19％)注射液｜2053nl',//单位制剂
-						unitPackage: '支',
-						drugConsumables: '',//药品耗材
-						drugAttributes: '营养药',//药品属性
-						// 123 包装单位 单位制剂  
-					},{
-						drugCode: '2301010108',//药品编码
-						drugName: '[Ｊ]50%葡萄糖针(100ml)',//药品名称
-						specification: '50%*100ml',//规格
-						drugDose: '100',//剂量
-						dosageUnit: 'ml',//剂量单位
-						mainDose: '100ml',//主药剂量
-						vehicleDose: '100ml',//溶媒剂量
-						quickCheckCode: 'PTTZSY',//速查码
-						containerNumber: '310100',//货柜号
-						unitPreparation: '葡萄糖注射液｜100ml：50% / 50g（葡萄糖）',//单位制剂
-						unitPackage: '支',
-						drugConsumables: '',//药品耗材
-						drugAttributes: '普通药'//药品属性
-					}
-				],
-				dialogFormVisible: false,
-				// 编辑表单
-				editForm: {
-					drugName: '',//药品名称
-					drugCode: '',//药品编码
-					commodityName: '',//商品名称
-					quickCheckCode: '',//速查码/拼音码
-					specification: '',//规格描述
-					priority: '',//显示优先级
-					mainDose: '',//主药剂量
-					drugDose: '',//剂量
-					dosageUnit: '',//剂量单位/主药剂量单位
-					vehicleDose: '',//溶媒剂量
-					vehicleDoseUnit: '',//溶媒剂量单位
-					unitPreparation: '',//单位制剂
-					drugAttributes: '',//药品属性
-					// 123 drugConsumables: '',//药品耗材不需要
-					// 123 附加条件维护 基本信息等区分标题上  单位制剂选择 详情跳页
-					smallPackageNum: '',//小包装数量
-					smallPackageUnit: '',//小包装单位
-					bigPackageUnit: '',//大包装单位
-					containerNumber: '',//货柜号
-					classification: '',//分类
-					trialTimeCoefficient: '',//审方时间系数
-					restrictionInterval: '',//医生限药时间间隔
-					docMedicationLimit: '',//医生用药限量
-					docIntervalDay: '',//医生自定间隔日
-					wardInterval: '',//病区限药时间间隔
-					wardMedicationLimit: '',//病区用药限量
-					wardIntervalDay: '',//病区自定间隔日
-				},
-				// 显示优先级list
-				priorityList: [
-					{name: '1', id: 1},
-					{name: '2', id: 2},
-					{name: '3', id: 3},
-					{name: '4', id: 4},
-					{name: '5', id: 5},
-					{name: '6', id: 6},
-					{name: '7', id: 7},
-					{name: '8', id: 8},
-					{name: '9', id: 9},
-					{name: '0', id: 0},
-				],
-				// 剂量单位/主药剂量单位list
-				dosageUnitList: [
-					{name: 'g', id: 1},
-					{name: 'IU', id: 2},
-					{name: 'mg', id: 3},
-					{name: 'ml', id: 4},
-					{name: 'USP', id: 5},
-					{name: '袋', id: 6},
-					{name: '复方', id: 7},
-					{name: '瓶', id: 8},
-					{name: '支', id: 9},
-				],
-				// 溶媒剂量单位list
-				vehicleDoseUnitList: [
-					{name: 'ml', id: 1},
-				],
-				// 药品属性list
-				drugAttributesList: [
-					{name: '普通药', id: 1},
-					{name: '抗生素', id: 2},
-					{name: '化疗药', id: 3},
-					{name: '营养药', id: 4},
-					{name: '中药', id: 5}
-				],
-				// 药品耗材list
-				drugConsumablesList: [
-					{name: '注射器', id: 1}
-				],
-				// 分类list
-				classificationList: [
-					{name: '0', id: 1}
-				],
-				// 时间间隔list
-				timeIntervalList: [
-					{name: '自然月', id: 1},
-					{name: '自然季', id: 2},
-					{name: '自然年', id: 3},
-					{name: '自定间隔日', id: 4},
-				]
+				tableData: [],
+				displaySet: '',
+				hideSet: '',
+				updateSet: ''
 			}
 		},
+		mounted() {
+			let permissionList = JSON.parse(sessionStorage.getItem('permissionList'));
+			let index = this.$route.query.index;
+			let childrenIndex = this.$route.query.childrenIndex;
+			this.updateSet = this.common.permissionSet(index,childrenIndex,permissionList,'update');
+			this.displaySet = this.common.permissionSet(index,childrenIndex,permissionList,'display');
+			this.hideSet = this.common.permissionSet(index,childrenIndex,permissionList,'hide');
+			this.initTable();
+		},
 		methods: {
+			// 初始化table
+			initTable() {
+				this.page = 1;
+				this.getTable();
+			},
+			getTable() {
+				let apiurl = this.api.selectDrugListPage+'?page='+this.page+'&length='+this.length;
+				if(this.searchForm.drugCode!='') {
+					apiurl += '&drugCode=' + this.searchForm.drugCode;
+				}
+				if(this.searchForm.drugStatus!='') {
+					apiurl += '&status=' + this.searchForm.drugStatus;
+				}
+				this.common.getAxios(apiurl, this.returnTable);
+			},
+			returnTable(res) {
+				if(res.data.status) {
+					this.tableData = res.data.data.list;
+					this.total = res.data.data.total;
+				}
+			},
 			// 表格隔行颜色设置
 			tableRowClassName({row, rowIndex}) {
 			  if (rowIndex%2 == 0) {
@@ -217,16 +156,18 @@
 			},
 			// 数据size改变
 			handleSizeChange(val) {
-			  console.log(`每页 ${val} 条`);
+				this.length = val;
+				this.getTable();
 			},
 			// 页数改变
 			handleCurrentChange(val) {
-				console.log(`当前页: ${val}`);
+				this.page = val;
+				this.getTable();
 			},
 			// 编辑弹窗
 			editDepartment(index, row) {
 				let _this = this;
-				this.$router.push('drugAdminDesc');
+				this.$router.push({path: 'drugAdminDesc',query:{drugCode: row.drugCode}});
 			},
 			// 重置表单
 			clearForm() {
@@ -234,6 +175,19 @@
 				console.log(_this.$refs)
 				_this.$refs['editForm'].resetFields(); //重置表单
 				_this.dialogFormVisible = false;
+			},
+			setTable(index, row, type) {
+				let apiurl = this.api.updateStatus+'?id='+row.id+'&status='+type;
+				let data = {}
+				this.common.putAxios(apiurl, data, this.returnSetTable);
+			},
+			returnSetTable(res) {
+				if(res.data.status) {
+					this.$message.success('操作成功');
+					this.getTable();
+				} else {
+					this.$message.error(res.data.msg)
+				}
 			}
 		}
 	}

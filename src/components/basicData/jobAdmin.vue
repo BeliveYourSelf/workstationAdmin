@@ -2,7 +2,7 @@
 	<div class="con-area">
 		<el-breadcrumb separator-class="el-icon-arrow-right">
 		  <el-breadcrumb-item>基本数据管理</el-breadcrumb-item>
-		  <el-breadcrumb-item>监护等级</el-breadcrumb-item>
+		  <el-breadcrumb-item>职务管理</el-breadcrumb-item>
 		</el-breadcrumb>
 		<div class="width-style">
 			<!-- 搜索区域 -->
@@ -14,14 +14,7 @@
 						</el-tooltip>
 					</el-col>
 					<el-col :span="22" class="right-col">
-						<el-input
-						  suffix-icon="el-icon-search"
-							class="input-width"
-							placeholder="请输入监护等级名称"
-							v-model="searchForm.name"
-							clearable
-							@keyup.enter.native="initTable">
-						</el-input>
+						
 					</el-col>
 				</el-row>
 			</div>
@@ -34,20 +27,15 @@
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
 						<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
-						<el-table-column prop="name" label="名称" align="center"></el-table-column>
-						<el-table-column prop="weight" label="权重" align="center" :show-overflow-tooltip="true">
-							<template slot-scope="scope">
-								<el-rate v-model="scope.row.weight" disabled></el-rate>
-							</template>
-						</el-table-column>
-						<el-table-column prop="descript" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="roleName" label="职务名称" align="center"></el-table-column>
+						<el-table-column prop="description" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
 						<el-table-column fixed="right" label="操作" width="120" align="center">
 							<template slot-scope="scope">
 								<el-button
 									type="text"
 									size="small"
 									v-show="updateSet">
-									<!-- <span @click="editDepartment(scope.$index,scope.row)">编辑</span> -->
+									<span @click="editDepartment(scope.$index,scope.row)">编辑</span>
 								</el-button>
 								<el-button
 									type="text"
@@ -74,14 +62,11 @@
 		<!-- 编辑弹窗 -->
 		<el-dialog :title="formType==1?'新增':'编辑'" :visible.sync="dialogFormVisible" :before-close="clearForm">
 		  <el-form :model="editForm" class="hospital-edit" ref="editForm">
-		    <el-form-item label="监护等级名称:" :label-width="formLabelWidth" prop="name">
-		      <el-input v-model="editForm.name" autocomplete="off" ></el-input>
+		    <el-form-item label="名称:" :label-width="formLabelWidth">
+		      <el-input v-model="editForm.roleName" autocomplete="off" ></el-input>
 		    </el-form-item>
-				<el-form-item label="权重:" :label-width="formLabelWidth" prop="weight">
-					<el-rate v-model="editForm.weight"></el-rate>
-		    </el-form-item>
-				<el-form-item label="描述:" :label-width="formLabelWidth" prop="descript">
-				  <el-input type="textarea" v-model="editForm.descript" autocomplete="off" ></el-input>
+				<el-form-item label="描述:" :label-width="formLabelWidth">
+				  <el-input type="textarea" v-model="editForm.description" autocomplete="off" ></el-input>
 				</el-form-item>
 		  </el-form>
 		  <div slot="footer" class="dialog-footer">
@@ -103,30 +88,19 @@
 				total: 400,
 				formType: 1, //1新增2编辑
 				searchForm: {
-					name: ''
+					content: ''
 				},
 				tableData: [],
 				dialogFormVisible: false,
 				// 编辑表单
 				editForm: {
-					name:'',
-					weight: '',
-					descript:''
+					roleName:'',
+					description:''
 				},
-				groupList: [{
-					name: '1',
-					id: '1'
-				},{
-					name: '2',
-					id: '2'
-				},{
-					name: '3',
-					id: '3'
-				}],
-				formLabelWidth: '100px',
-				insertSet: '',
+				formLabelWidth: '80px',
+				updateSet: '',
 				deleteSet: '',
-				updateSet: ''
+				insertSet: ''
 			}
 		},
 		mounted() {
@@ -146,10 +120,8 @@
 			},
 			// 获取table信息
 			getTable() {
-				let apiurl = this.api.selectMonitorLevelDetailsManagementList+'?page='+this.page+'&length='+this.length;
-				if(this.searchForm.name != '') {
-					apiurl += '&name='+this.searchForm.name;
-				}
+				let apiurl = this.api.selectRoleListPage+'?page='+this.page+'&length='+this.length;
+			
 				this.common.getAxios(apiurl, this.returnTable);
 			},
 			returnTable(res) {
@@ -220,15 +192,33 @@
 				_this.formType = 1;
 			},
 			saveSet() {
-				let apiurl = this.api.insertMonitorLevelDetailsManagement;
-				let monitorLevelDetails = this.editForm;
-				this.common.postAxios(apiurl, monitorLevelDetails, this.returnSave);
+				if(this.formType == 1) {
+					let apiurl = this.api.insertRole;
+					let usuallyLanguage = this.editForm;
+					this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
+				} else if(this.formType == 2) {
+					let apiurl = this.api.updateRole;
+					let usuallyLanguage = this.editForm;
+					this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
+				} 
 			},
 			returnSave(res) {
 				if(res.data.status) {
 					this.$message({
 						type: 'success',
 						message: '新增成功'
+					});
+					this.clearForm();
+					this.initTable();
+				} else {
+					this.$message.error(res.data.msg);
+				}
+			},
+			returnUpdate(res) {
+				if(res.data.status) {
+					this.$message({
+						type: 'success',
+						message: '修改成功'
 					});
 					this.clearForm();
 					this.initTable();
@@ -244,7 +234,7 @@
 						cancelButtonText: '取消',
 						type: 'warning'
 					}).then(() => {
-						let apiurl = _this.api.deleteMonitorLevelDetailsById+'?arrId='+row.id;
+						let apiurl = _this.api.deleteRole+'?id='+row.roleId;
 						let data = {};
 						_this.common.deleteAxios(apiurl, data, _this.returnDel);
 					}).catch(() => {

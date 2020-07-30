@@ -1,146 +1,68 @@
 <template>
 	<div class="con-area">
+		<el-breadcrumb separator-class="el-icon-arrow-right">
+		  <el-breadcrumb-item :to="{path: 'unreasonableMedication'}">不合理用药</el-breadcrumb-item>
+		  <el-breadcrumb-item>不合理用药详情</el-breadcrumb-item>
+		</el-breadcrumb>
 		<div class="view-tip">查看</div>
-		<div class="table-name">溶媒不适宜</div>
-		<el-table
-		  :data="solventData"
-			ref="solventData"
-		 >
-			<el-table-column prop="prescriptionNumber" label="处方号" width="150" align="center"></el-table-column>
-			<el-table-column prop="drug" label="药品" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="actingDrug" label="作用药品" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="describe" label="描述" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="source" label="来源" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="retreat" label="退方人" show-overflow-tooltip align="center"></el-table-column>
-		</el-table>
-			 <!-- @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')" -->
-		<div class="block page-area">
-			<el-pagination
-			 @size-change="handleSizeChangeSolvent"
-			 @current-change="handleCurrentChangeSolvent"
-			 :current-page="currentPageSolvent"
-			 :page-sizes="[5, 10, 15, 50]"
-			 :page-size="lengthSolvent"
-			 layout="total, sizes, prev, pager, next, jumper"
-			 :total="totalSolvent">
-			</el-pagination>
-		</div>
-		<div class="table-name">数量和剂量</div>
-		<el-table
-		  :data="quantityData"
-			ref="quantityData"
-		 >
-			<el-table-column prop="prescriptionNumber" label="处方号" width="150" align="center"></el-table-column>
-			<el-table-column prop="drug" label="药品" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="actingDrug" label="作用药品" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="describe" label="描述" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="source" label="来源" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="retreat" label="退方人" show-overflow-tooltip align="center"></el-table-column>
-		</el-table>
-			 <!-- @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')" -->
-		<div class="block page-area">
-			<el-pagination
-			 @size-change="handleSizeChangeSolvent"
-			 @current-change="handleCurrentChangeSolvent"
-			 :current-page="currentPageSolvent"
-			 :page-sizes="[5, 10, 15, 50]"
-			 :page-size="lengthSolvent"
-			 layout="total, sizes, prev, pager, next, jumper"
-			 :total="totalSolvent">
-			</el-pagination>
-		</div>
-		<div class="table-name">配伍禁忌</div>
-		<el-table
-		  :data="incompatibilityData"
-			ref="incompatibilityData"
-		 >
-			<el-table-column prop="prescriptionNumber" label="处方号" width="150" align="center"></el-table-column>
-			<el-table-column prop="drug" label="药品" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="actingDrug" label="作用药品" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="describe" label="描述" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="source" label="来源" show-overflow-tooltip align="center"></el-table-column>
-			<el-table-column prop="retreat" label="退方人" show-overflow-tooltip align="center"></el-table-column>
-		</el-table>
-			 <!-- @size-change="(val)=>handleSizeChangeSolvent(val, 'Solvent')" -->
-		<div class="block page-area">
-			<el-pagination
-			 @size-change="handleSizeChangeSolvent"
-			 @current-change="handleCurrentChangeSolvent"
-			 :current-page="currentPageSolvent"
-			 :page-sizes="[5, 10, 15, 50]"
-			 :page-size="lengthSolvent"
-			 layout="total, sizes, prev, pager, next, jumper"
-			 :total="totalSolvent">
-			</el-pagination>
-		</div>
+		
+		<tableDesc descName="用法用量" :descList="usagedList" v-if="usagedList.length!=0"></tableDesc>
+		<tableDesc descName="疾病禁忌" :descList="diseaseTabooList" v-if="diseaseTabooList.length!=0"></tableDesc>
+		<tableDesc descName="职业禁忌" :descList="occupationalTabooList" v-if="occupationalTabooList.length!=0"></tableDesc>
+		<tableDesc descName="年龄禁忌" :descList="ageTabooList" v-if="ageTabooList.length!=0"></tableDesc>
+		<tableDesc descName="相互作用" :descList="interactionList" v-if="interactionList.length!=0"></tableDesc>
+		<tableDesc descName="特殊状态禁忌" :descList="specialStateTabooList" v-if="specialStateTabooList.length!=0"></tableDesc>
+		<tableDesc descName="交叉过敏" :descList="crossAllergyList" v-if="crossAllergyList.length!=0"></tableDesc>
+		<tableDesc descName="浓度限制" :descList="concentrationLimitList" v-if="concentrationLimitList.length!=0"></tableDesc>
+		<tableDesc descName="配伍禁忌" :descList="incompatibilityCountNameList" v-if="incompatibilityCountNameList.length!=0"></tableDesc>
+		<tableDesc descName="溶媒限制" :descList="solventProhibitList" v-if="solventProhibitListlength!=0"></tableDesc>
+		<tableDesc descName="其他" :descList="otherList" v-if="otherList.length!=0"></tableDesc>
 	</div>
 </template>
 
 <script>
+	import tableDesc from './unreasonableMedicationViewTemp'
 	export default{
 		data() {
 			return {
-				// 溶媒不适宜
-				pageSolvent: 1,
-				currentPageSolvent: 1,
-				lengthSolvent: 5,
-				totalSolvent: 400,
-				solventData: [{
-					prescriptionNumber: '784715',//处方号
-					drug: '培美曲塞二钠针（江苏豪森）',// 药品
-					actingDrug: '',// 作用药品
-					describe: '培美曲塞二钠只建议用0.9%的氰化钠注射液（不含防腐剂）溶解稀释至100ml，静脉滴注超过10分钟',// 描述
-					source: '药品说明书',// 来源
-					retreat: '王静'// 退方人
-				}],
-				// 数量和剂量
-				quantityData: [{
-					prescriptionNumber: '729395',//处方号
-					drug: '曲妥珠单抗针（赫赛汀440mg）',// 药品
-					actingDrug: '水溶性维生素针',// 作用药品
-					describe: '药品数量和剂量不同',// 描述
-					source: '剂量：330.0000mg与数量：0.75g不符',// 来源
-					retreat: '王静'// 退方人
-				}],
-				// 配伍禁忌
-				incompatibilityData: [{
-					prescriptionNumber: '5226649',//处方号
-					drug: '【J】氟尿嘧啶针',// 药品
-					actingDrug: '【J】奥沙利铂针（艾恒）',// 作用药品
-					describe: '因与氯化钠和碱性溶液（特别是5-氟尿嘧啶）之间存在配伍禁忌，奥沙利铂不要与上述制剂混合或通过同一条静脉同时给药',// 描述
-					source: '药品书名书',// 来源
-					retreat: '王静'// 退方人
-				}],
-				// 相互作用
-				interactionData: [{
-					prescriptionNumber: '576652',//处方号
-					drug: '【J】氟尿嘧啶针',// 药品
-					actingDrug: '【J】奥沙利铂针（艾恒）',// 作用药品
-					describe: '因与氯化钠和碱性溶液（特别是5-氟尿嘧啶）之间存在配伍禁忌，奥沙利铂不要与上述制剂混合或通过同一条静脉同时给药',// 描述
-					source: '药品书名书',// 来源
-					retreat: '王静'// 退方人
-				}],
-				// 审方结果
-				trialResultsData: [{
-					prescriptionNumber: '576652',//处方号
-					drug: '【J】氟尿嘧啶针',// 药品
-					actingDrug: '【J】奥沙利铂针（艾恒）',// 作用药品
-					describe: '因与氯化钠和碱性溶液（特别是5-氟尿嘧啶）之间存在配伍禁忌，奥沙利铂不要与上述制剂混合或通过同一条静脉同时给药',// 描述
-					source: '药品书名书',// 来源
-					retreat: '王静'// 退方人
-				}],
-				// 溶媒限制
-				solventLimitData: [{
-					prescriptionNumber: '576652',//处方号
-					drug: '【J】氟尿嘧啶针',// 药品
-					actingDrug: '【J】奥沙利铂针（艾恒）',// 作用药品
-					describe: '因与氯化钠和碱性溶液（特别是5-氟尿嘧啶）之间存在配伍禁忌，奥沙利铂不要与上述制剂混合或通过同一条静脉同时给药',// 描述
-					source: '药品书名书',// 来源
-					retreat: '王静'// 退方人
-				}],
+				parmacistId: this.$route.query.parmacistId,
+				usagedList: [], //用法用量
+				diseaseTabooList: [], //疾病禁忌
+				occupationalTabooList: [], //职业禁忌
+				ageTabooList: [], //年龄禁忌
+				interactionList: [], //相互作用
+				specialStateTabooList: [], //特殊状态禁忌
+				crossAllergyList: [], //交叉过敏
+				concentrationLimitList: [], //浓度限制
+				incompatibilityCountNameList: [], //配伍禁忌
+				solventProhibitList: [], //溶媒限制
+				otherList: [], //其他
 			}
 		},
+		components: {
+			tableDesc
+		},
+		mounted() {
+			this.getDesc();
+		},
 		methods: {
+			getDesc() {
+			  let apiurl = this.api.selectDocAdviceDetailsStatistics+'?parmacistId='+this.parmacistId;
+			  this.common.getAxios(apiurl, this.reutrnDesc);
+			},
+			reutrnDesc(res) {
+				this.usagedList = res.data.data.usagedList;
+				this.diseaseTabooList = res.data.data.diseaseTabooList;
+				this.occupationalTabooList = res.data.data.occupationalTabooList;
+				this.ageTabooList = res.data.data.ageTabooList;
+				this.interactionList = res.data.data.interactionList;
+				this.specialStateTabooList = res.data.data.specialStateTabooList;
+				this.crossAllergyList = res.data.data.crossAllergyList;
+				this.concentrationLimitList = res.data.data.concentrationLimitList;
+				this.incompatibilityCountNameList = res.data.data.incompatibilityCountNameList;
+				this.solventProhibitList = res.data.data.solventProhibitList;
+				this.otherList = res.data.data.otherList;
+			},
 			// 数据size改变溶媒不适宜
 			handleSizeChangeSolvent(val) {
 			  console.log(`每页 ${val} 条`,type);
@@ -148,6 +70,10 @@
 			// 页数改变溶媒不适宜
 			handleCurrentChangeSolvent(val) {
 				console.log(`当前页: ${val}`);
+			},
+			goBack() {
+				console.log(9)
+				this.$router.go(-1);
 			},
 		}
 	}

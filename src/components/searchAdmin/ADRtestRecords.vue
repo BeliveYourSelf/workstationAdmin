@@ -8,25 +8,36 @@
 					<!-- 搜索区域 -->
 					<div class="search-area">
 						<el-row>
-							<el-col :span="20">
-								<el-date-picker
-									v-model="searchForm.searchData"
-									type="daterange"
-									range-separator="至"
-									start-placeholder="开始日期"
-									end-placeholder="结束日期"
-									class="data-picker-set">
-								</el-date-picker>
-								<span class="input-tip">不良反应类别：</span>
-								<el-input
-									class="input-width"
-									placeholder="医疗器械"
-									v-model="searchForm.name"
-									clearable>
-								</el-input>
+							<el-col :span="0" class="search-btn-area">
 							</el-col>
-							<el-col :span="4" class="search-btn-area">
-								<el-button class="search-btn" type="primary">确认</el-button>
+							<el-col :span="24" class="right-col">
+								<el-date-picker
+								 @change="initTable"
+								 v-model="searchForm.searchData" 
+								 type="daterange" 
+								 range-separator="至" 
+								 start-placeholder="开始日期"
+								 end-placeholder="结束日期" 
+								 class="data-picker-set"
+								 format="yyyy 年 MM 月 dd 日"
+								 value-format="yyyy/MM/dd HH:mm:ss">
+								</el-date-picker>
+								<el-select v-model="searchForm.adrMonitorTypeId" @change="initTable" clearable class="margin-left">
+									<el-option
+									 v-for="list in adrMonitorTypeList"
+									 :value="list.id"
+									 :key="list.id"
+									 :label="list.adrMonitorType">
+									</el-option>
+								</el-select>
+								<el-input
+								  suffix-icon="el-icon-search"
+									class="input-width margin-left"
+									placeholder="药师姓名/患者姓名/床号/住院号"
+									v-model="searchForm.condition"
+									clearable
+									@keyup.enter.native="initTable">
+								</el-input>
 							</el-col>
 						</el-row>
 					</div>
@@ -38,11 +49,13 @@
 								:row-class-name="tableRowClassName"
 								:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}"
 							>
-								<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+								<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 								</el-table-column>
-								<el-table-column prop="type" label="类别" align="center"></el-table-column>
-								<el-table-column prop="describe" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
-								<el-table-column prop="date" label="日期" align="center"></el-table-column>
+								<el-table-column prop="patientName" label="患者姓名" align="center"></el-table-column>
+								<el-table-column prop="adrMonitorTypeName" label="类型" align="center"></el-table-column>
+								<el-table-column prop="pharmacistName" label="监测人" align="center"></el-table-column>
+								<el-table-column prop="descript" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
+								<el-table-column prop="createTime" label="日期" align="center"></el-table-column>
 								
 								
 						 </el-table>
@@ -74,31 +87,52 @@
 				searchForm: {
 					searchData: '',
 					code: '',
-					name: ''
+					name: '',
+					type: '',
+					condition: '',
+					adrMonitorTypeId: ''
 				},
-				tableData: [{
-						date:'2020-06-12 09:23',
-						type: '医疗器械',
-						docName:'王晓红',
-						userName: '王晓雯',
-						room: '心血管内科',
-						bed: 'Z-110',
-						lavel: '一级',
-						describe: '这是一个检测记录的描述这是一个检测记录的描述这是一个检测记录的描述'
-					},{
-						date:'2020-06-12 09:23',
-						type: '医疗器械',
-						docName:'王晓红',
-						userName: '王晓雯',
-						room: '心血管内科',
-						bed: 'Z-110',
-						lavel: '一级',
-						describe: '这是一个检测记录的描述这是一个检测记录的描述这是一个检测记录的描述'
-					}
-				],
+				adrMonitorTypeList: [],
+				tableData: [],
 			}
 		},
+		mounted() {
+			this.initTable();
+			this.getAdrMonitorTypeList();
+		},
 		methods: {
+			// 初始化table
+			initTable() {
+				this.page = 1;
+				this.getTable();
+			},
+			// 获取table信息
+			getTable() {
+				let apiurl=this.api.selectADRMonitorListPage+'?pageNum='+this.page+'&pageSize='+this.length;
+				if(this.searchForm.condition!=''){
+					apiurl+='&condition='+this.searchForm.condition;
+				}
+				if(this.searchForm.searchData.length!=''){
+					apiurl+='&startTime='+this.searchForm.searchData[0]+'&endTime='+this.searchForm.searchData[1];
+				}
+				if(this.searchForm.adrMonitorTypeId!=''){
+					apiurl+='&adrMonitorTypeId='+this.searchForm.adrMonitorTypeId;
+				}
+				this.common.getAxios(apiurl, this.returnTable);
+			},
+			returnTable(res) {
+				this.tableData = res.data.data.list;
+				this.total = res.data.data.total;
+			},
+			// 获取adrMonitorTypeList 检测类型
+			getAdrMonitorTypeList() {
+				let _this = this;
+				let apiurl = this.api.selectADRMonitorTypeList;
+				this.common.getAxios(apiurl, returnAdrMonitorTypeList);
+				function returnAdrMonitorTypeList(res) {
+					_this.adrMonitorTypeList = res.data.data;
+				}
+			},
 			// 表格隔行颜色设置
 			tableRowClassName({row, rowIndex}) {
 			  if (rowIndex%2 == 0) {

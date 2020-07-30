@@ -8,18 +8,21 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
-						<span class="input-tip">科室名称：</span>
+					<el-col :span="0" class="search-btn-area left-col">
+					</el-col>
+					<el-col :span="24" class="right-col">
+						<el-select v-model="searchForm.status" class="margin-left" clearable @change="initTable">
+							<el-option label="冻结" value="true" key="true"></el-option>
+							<el-option label="正常" value="false" key="false"></el-option>
+						</el-select>
 						<el-input
-							class="input-width"
+						  suffix-icon="el-icon-search"
+							class="input-width margin-left"
 							placeholder="请输入科室名称"
 							v-model="searchForm.departmentName"
 							clearable
-							 @keyup.enter.native="initTable">
+							@keyup.enter.native="initTable">
 						</el-input>
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -30,7 +33,7 @@
 						style="width: 100%"
 						:row-class-name="tableRowClassName"
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-						<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+						<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
 						<el-table-column prop="code" label="编码" align="center"></el-table-column>
 						<el-table-column prop="departmentName" label="科室名称" align="center"></el-table-column>
@@ -42,14 +45,15 @@
 							<template slot-scope="scope">
 								<el-button
 									type="text"
-									size="small">
-									<span class="text-default" @click="editDepartment(scope.$index,scope.row)">编辑</span>
+									size="small"
+									v-show="updateSet">
+									<span @click="editDepartment(scope.$index,scope.row)">编辑</span>
 								</el-button>
 								<el-button
 									type="text"
 									size="small">
-									<span v-if="!scope.row.status" class="text-my-gray" @click="setTable(scope.$index, scope.row,'true')">冻结</span>
-									<span v-else-if="scope.row.status" class="text-orange" @click="setTable(scope.$index, scope.row,'false')">解冻</span>
+									<span v-if="!scope.row.status&&frozenSet" class="text-my-gray" @click="setTable(scope.$index, scope.row,'true')">冻结</span>
+									<span v-else-if="scope.row.status&&thawSet" class="text-orange" @click="setTable(scope.$index, scope.row,'false')">解冻</span>
 								</el-button>
 							</template>
 						</el-table-column>
@@ -121,7 +125,9 @@
 				length: 15,
 				total: 0,
 				searchForm: {
-					departmentName: ''
+					departmentName: '',
+					departmentStatus: '',
+					status: ''
 				},
 				tableData: [],
 				dialogFormVisible: false,
@@ -146,10 +152,20 @@
 					id: '3'
 				}],
 				formLabelWidth: '80px',
+				updateSet: '',
+				frozenSet: '', //冻结
+				thawSet: '' //解冻
 			}
 		},
 		mounted() {
 			this.initTable();
+			let permissionList = JSON.parse(sessionStorage.getItem('permissionList'));
+			let index = this.$route.query.index;
+			let childrenIndex = this.$route.query.childrenIndex;
+			console.log(index,childrenIndex,permissionList)
+			this.updateSet = this.common.permissionSet(index,childrenIndex,permissionList,'update');
+			this.frozenSet = this.common.permissionSet(index,childrenIndex,permissionList,'frozen');
+			this.thawSet = this.common.permissionSet(index,childrenIndex,permissionList,'thaw');
 		},
 		methods: {
 			// 表格隔行颜色设置
@@ -175,6 +191,9 @@
 				let apiurl = this.api.selectDepartmentListPage+'?page='+this.page+'&length='+this.length;
 				if(this.searchForm.departmentName != '') {
 					apiurl += '&departmentName='+this.searchForm.departmentName;
+				}
+				if(this.searchForm.status != '') {
+					apiurl += '&status='+this.searchForm.status;
 				}
 				this.common.getAxios(apiurl, this.returnTable);
 			},
@@ -263,7 +282,7 @@
 		width: 50%;
 		margin: 0 auto;
 	}
-	.el-select{
+	.hospital-edit .el-select{
 		width: 100%;
 	}
 </style>

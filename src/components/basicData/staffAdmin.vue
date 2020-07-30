@@ -8,18 +8,17 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
-						<span class="input-tip">员工姓名：</span>
+					<el-col :span="0" class="search-btn-area left-col">
+					</el-col>
+					<el-col :span="24" class="right-col">
 						<el-input
+						  suffix-icon="el-icon-search"
 							class="input-width"
 							placeholder="请输入员工姓名"
 							v-model="searchForm.userName"
 							clearable
 							@keyup.enter.native="initTable">
 						</el-input>
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
 					</el-col>
 				</el-row>
 			</div>
@@ -30,11 +29,11 @@
 						style="width: 100%"
 						:row-class-name="tableRowClassName"
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-						<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+						<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
-						<el-table-column prop="departmentName" label="科室" align="center"></el-table-column>
-						<el-table-column prop="name" label="员工名称" align="center"></el-table-column>
 						<el-table-column prop="number" label="工号" align="center"></el-table-column>
+						<el-table-column prop="name" label="姓名" align="center"></el-table-column>
+						<el-table-column prop="departmentName" label="科室" align="center"></el-table-column>
 						<el-table-column prop="job" label="职务" align="center"></el-table-column>
 						<el-table-column prop="title" label="职称" align="center"></el-table-column>
 						<!-- 123 科室 -->
@@ -43,8 +42,9 @@
 							<template slot-scope="scope">
 								<el-button
 									type="text"
-									size="small">
-									<span class="text-default" @click="editDepartment(scope.$index,scope.row)">编辑</span>
+									size="small"
+									v-show="updateSet">
+									<span @click="editDepartment(scope.$index,scope.row)">编辑</span>
 								</el-button>
 							</template>
 						</el-table-column>
@@ -92,36 +92,10 @@
 					 :titles="['可选权限列表', '已拥有权限列表']"
 					 :data="authorityList">
 					</el-transfer>
-					<!-- <div class="form-bottom" v-if="editForm.isAdministrator">
-						<el-form-item label="工作台" :label-width="formLabelWidth1">
-							<el-checkbox-group v-model="editForm.workbenchList">
-								<el-checkbox v-for="item in workbenchList" :label="item.id" name="workbenchList">{{item.name}}</el-checkbox>
-							</el-checkbox-group>
-						</el-form-item>
-						<el-form-item label="基本数据管理" :label-width="formLabelWidth1">
-							<el-checkbox-group v-model="editForm.basicDataList">
-								<el-checkbox v-for="item in basicDataList" :label="item.id" name="basicDataList">{{item.name}}</el-checkbox>
-							</el-checkbox-group>
-						</el-form-item>
-						<el-form-item label="查询" :label-width="formLabelWidth1">
-							<el-checkbox-group v-model="editForm.searchList">
-								<el-checkbox v-for="item in searchList" :label="item.id" name="searchList">{{item.name}}</el-checkbox>
-							</el-checkbox-group>
-						</el-form-item>
-						<el-form-item label="日常管理" :label-width="formLabelWidth1">
-							<el-checkbox-group v-model="editForm.dailyManagementList">
-								<el-checkbox v-for="item in dailyManagementList" :label="item.id" name="dailyManagementList">{{item.name}}</el-checkbox>
-							</el-checkbox-group>
-						</el-form-item>
-						<el-form-item label="药学交接班" :label-width="formLabelWidth1">
-							<el-checkbox-group v-model="editForm.handoverManagementList">
-								<el-checkbox v-for="item in handoverManagementList" :label="item.id" name="handoverManagementList">{{item.name}}</el-checkbox>
-							</el-checkbox-group>
-						</el-form-item>
-					</div> -->
+					
 				</el-form>
 				<div slot="footer" class="dialog-footer">
-					<el-button type="primary" @click="clearForm">确 定</el-button>
+					<el-button type="primary" @click="saveSet">确 定</el-button>
 					<el-button @click="clearForm">取 消</el-button>
 				</div>
 			</el-dialog>
@@ -197,9 +171,14 @@
 				handoverManagementList: [
 					{name: '药学交接班',id: 14,},
 				],
+				updateSet: ''
 			}
 		},
 		mounted() {
+			let permissionList = JSON.parse(sessionStorage.getItem('permissionList'));
+			let index = this.$route.query.index;
+			let childrenIndex = this.$route.query.childrenIndex;
+			this.updateSet = this.common.permissionSet(index,childrenIndex,permissionList,'update');
 			this.initTable();
 		},
 		methods: {
@@ -251,18 +230,24 @@
 			// 编辑弹窗
 			editDepartment(index, row) {
 				let _this = this;
-				_this.dialogFormVisible = true;
-				// 回显数据
-				_this.$nextTick(function(){
-					_this.editForm = JSON.parse(JSON.stringify(row));
-					_this.editForm.count = row.count;
-					_this.editForm.staffName = row.staffName;
-					_this.editForm.staffCode = row.staffCode;
-					_this.editForm.post = row.post;
-					_this.editForm.department = row.department;
-					_this.editForm.jobTitle = row.jobTitle;
-					_this.editForm.isAdministrator = row.isAdministrator;
-				})
+				this.$router.push({path: 'staffAdminDesc', query:{id: row.id}})
+			},
+			// 保存编辑
+			saveSet() {
+				let apiurl = this.api.updateUser;
+				let data = this.editForm;
+				console.log(data);
+				this.common.putAxios(apiurl, data, this.returnSaveSet);
+			},
+			returnSaveSet(res) {
+				if(res.data.status) {
+					this.$message.success('修改成功');
+					this.$refs['editForm'].resetFields(); //重置表单
+					this.dialogFormVisible = false;
+					this.getTable();
+				} else {
+					this.$message.error(res.data.msg);
+				}
 			},
 			// 重置表单
 			clearForm() {

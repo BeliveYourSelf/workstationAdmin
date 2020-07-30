@@ -7,8 +7,15 @@
 		<el-row class="my-row">
 			<el-col :span="4" class="staff-col">
 				<div class="search-staff">
+					<!-- 下拉选组 -->
+					<el-select placeholder="请选择组别" v-model="searchForm.systemCheckOrPersonCheck" @change="getGroupDepartment">
+						<el-option v-for="list in systemCheckOrPersonCheckList" 
+							:label="list.name" 
+							:value="list.id" 
+							:key="list.id"></el-option>
+					</el-select>
 					<el-input
-						class="search-code"
+						class="search-code margin-top"
 						placeholder="请输入科室"
 						v-model="searchForm.departmentName"
 						suffix-icon="el-icon-search"
@@ -25,8 +32,14 @@
 					<!-- 搜索区域 -->
 					<div class="search-area">
 						<el-row>
-							<el-col :span="20">
+							<el-col :span="2" class="search-btn-area left-col">
+								<el-tooltip class="item" effect="dark" content="导出打印" placement="top-start">
+									<el-button class="el-icon-download" type="primary" @click="downloadExcel"></el-button>
+								</el-tooltip>
+							</el-col>
+							<el-col :span="22" class="right-col">
 								<el-date-picker
+									@change="initTable"
 									v-model="searchForm.searchData"
 									type="daterange"
 									range-separator="至"
@@ -36,8 +49,11 @@
 									format="yyyy 年 MM 月 dd 日"
 									value-format="yyyy/MM/dd HH:mm:ss">
 								</el-date-picker>
-								<span class="input-tip">状态：</span>
-								<el-select v-model="searchForm.checkStatus" placeholder="请选择" clearable>
+								<el-select
+								  v-model="searchForm.checkStatus"
+									placeholder="请选择状态"
+									clearable class="margin-left"
+									@change="initTable">
 									<el-option
 										v-for="item in checkStatusList"
 										:key="item.id"
@@ -45,8 +61,12 @@
 										:value="item.id">
 									</el-option>
 								</el-select>
-								<span class="input-tip">分类：</span>
-								<el-select v-model="searchForm.drugType" placeholder="请选择" clearable>
+								<el-select
+								  v-model="searchForm.drugType"
+									placeholder="请选择分类"
+									clearable
+									class="margin-left"
+									@change="initTable">
 									<el-option
 										v-for="item in drugTypeList"
 										:key="item.id"
@@ -54,10 +74,6 @@
 										:value="item.id">
 									</el-option>
 								</el-select>
-							</el-col>
-							<el-col :span="4" class="search-btn-area">
-								<el-button class="search-btn" type="primary" icon="el-icon-search" @click="initTable">查询</el-button>
-								<el-button class="search-btn" type="primary" @click="downloadExcel">导出打印</el-button>
 							</el-col>
 						</el-row>
 					</div>
@@ -68,18 +84,16 @@
 							style="width: 100%"
 							:row-class-name="tableRowClassName"
 							:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-								<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+								<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 								</el-table-column>
-								<el-table-column prop="id" label="医嘱号" align="center" width="100"></el-table-column>
-								<el-table-column label="状态" align="center">
-									<template slot-scope="scope">
-										<span v-if="scope.row.checkStatus==1">未审</span>
-										<span v-else-if="scope.row.checkStatus==2">通过</span>
-										<span v-else-if="scope.row.checkStatus==3">未通过</span>
-										<span v-else-if="scope.row.checkStatus==4">已停</span>
-										<span v-else-if="scope.row.checkStatus==5">暂停</span>
-									</template>
-								</el-table-column>
+								<el-table-column prop="id" label="处方编号" align="center" width="100"></el-table-column>
+								<el-table-column prop="ward" label="病区名称" align="center" :show-overflow-tooltip="true"></el-table-column>
+								<el-table-column prop="patientsName" label="患者姓名" align="center"></el-table-column>
+								<!-- 科室 病区名称
+								患者姓名 -->
+								<el-table-column prop="beInHospitalId" label="住院号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
+								<el-table-column prop="patientCodeHis" label="就诊卡号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
+								<el-table-column prop="bedNumber" label="床号" align="center"></el-table-column>
 								<el-table-column label="分类" align="center">
 									<template slot-scope="scope">
 										<span v-if="scope.row.drugType==1">普</span>
@@ -90,15 +104,28 @@
 									</template>
 								</el-table-column>
 								<el-table-column prop="frequency" label="频次" align="center"></el-table-column>
-								<el-table-column prop="ward" label="病区" align="center" :show-overflow-tooltip="true"></el-table-column>
-								<el-table-column prop="bedNumber" label="床号" align="center"></el-table-column>
-								<el-table-column prop="patientsName" label="患者" align="center"></el-table-column>
-								<el-table-column prop="createTime" label="接收时间" align="center" width="150"></el-table-column>
-								<el-table-column prop="endTime" label="停止日期" align="center" width="150"></el-table-column>
 								<el-table-column prop="startTime" label="开始日期" align="center" width="150"></el-table-column>
+								<el-table-column prop="endTime" label="停止日期" align="center" width="150"></el-table-column>
 								<el-table-column prop="checkStatusHis" label="系统审方结果" align="center" width="120"></el-table-column>
-								<el-table-column prop="beInHospitalId" label="住院号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
-								<el-table-column prop="patientCodeHis" label="病人编号" align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
+								<!-- 床号
+								医嘱类别 分类
+								频次
+								开始日期
+								结束日期
+								审方结果
+								备注 -->
+								<el-table-column label="状态" align="center">
+									<template slot-scope="scope">
+										<span v-if="scope.row.checkStatus==1">未审</span>
+										<span v-else-if="scope.row.checkStatus==2">通过</span>
+										<span v-else-if="scope.row.checkStatus==3">未通过</span>
+										<span v-else-if="scope.row.checkStatus==4">已停</span>
+										<span v-else-if="scope.row.checkStatus==5">暂停</span>
+									</template>
+								</el-table-column>
+								<el-table-column prop="checkStatusHis" label="备注" align="center" width="120"></el-table-column>
+								<!-- <el-table-column prop="createTime" label="接收时间" align="center" width="150"></el-table-column> -->
+								
 								<el-table-column fixed="right" label="操作" width="120" align="center">
 									<template slot-scope="scope">
 										<el-button
@@ -125,39 +152,69 @@
 			</el-col>
 				<el-dialog title="查看" :visible.sync="dialogFormVisible" class="view-dialog">
 					<p class="dialog-tip">处方信息</p>
-					<div class="view-info">
-						<span>病区：</span>
-						<span class="info-span">{{form.departmentWardName}}</span>
-						<span>开始时间：</span>
-						<span class="info-span">{{form.startTime}}</span>
-						<span>停止时间：</span>
-						<span class="info-span">{{form.endTime}}</span>
-						<span>医生：</span>
-						<span class="info-span">{{form.userName}}</span>
-						<span>频次：</span>
-						<span class="info-span">{{form.frequency}}</span>
-					</div>
-					<div class="view-info">
-						<span>患者：</span>
-						<span class="info-span">{{form.patientsName}}</span>
-						<span>性别：</span>
-						<span class="info-span" v-if="form.gander==0">女</span>
-						<span class="info-span" v-else-if="form.gander==1">男</span>
-						<span>年龄：</span>
-						<span class="info-span">{{form.bornDay}}</span>
-						<span>身高：</span>
-						<span class="info-span">{{form.height}}CM</span>
-						<span>体重：</span>
-						<span class="info-span">{{form.weight}}KG</span>
-						<span>床号：</span>
-						<span class="info-span">{{form.bedNumber}}</span>
-						<span>住院号：</span>
-						<span class="info-span">{{form.id}}</span>
-					</div>
+					<el-row class="view-info">
+						<el-col :span="5">
+							<span class="info-label">病区：</span>
+							<span class="info-span">{{form.departmentWardName}}</span>
+						</el-col>
+						<el-col :span="7">
+							<span class="info-label">开始时间：</span>
+							<span class="info-span">{{form.startTime}}</span>
+						</el-col>
+						<el-col :span="7">
+							<span class="info-label">停止时间：</span>
+							<span class="info-span">{{form.endTime}}</span>
+						</el-col>
+						<el-col :span="5">
+							<span class="info-label">医生：</span>
+							<span class="info-span">{{form.userName}}</span>
+						</el-col>
+					</el-row>
+					<el-row class="view-info">
+						<el-col :span="5">
+							<span class="info-label">频次：</span>
+							<span class="info-span">{{form.frequency}}</span>
+						</el-col>
+						<el-col :span="7">
+							<span class="info-label">患者：</span>
+							<span class="info-span">{{form.patientsName}}</span>
+						</el-col>
+						<el-col :span="7">
+							<span class="info-label">性别：</span>
+							<span class="info-span" v-if="form.gander==0">女</span>
+							<span class="info-span" v-else-if="form.gander==1">男</span>
+						</el-col>
+						<el-col :span="5">
+							<span class="info-label">出生日期：</span>
+							<span class="info-span">{{form.bornDay}}</span>
+						</el-col>
+						
+					</el-row>
+					<el-row class="view-info">
+						<el-col :span="5">
+							<span class="info-label">身高：</span>
+							<span class="info-span">{{form.height}}CM</span>
+						</el-col>
+						<el-col :span="7">
+							<span class="info-label">体重：</span>
+							<span class="info-span">{{form.weight}}KG</span>
+						</el-col>
+						<el-col :span="7">
+							<span class="info-label">床号：</span>
+							<span class="info-span">{{form.bedNumber}}</span>
+						</el-col>
+						<el-col :span="5">
+							<span class="info-label">住院号：</span>
+							<span class="info-span">{{form.id}}</span>
+						</el-col>
+						<!-- 诊断信息 -->
+					</el-row>
 				  <el-table :data="form.docAdviceDetailsList" class="dialog-table">
-				    <el-table-column property="content" label="医嘱内容" align="center" :show-overflow-tooltip="true"></el-table-column>
+				    <el-table-column property="content" label="药品名称" align="center" :show-overflow-tooltip="true"></el-table-column>
 				    <el-table-column property="spec" label="规格" align="center"></el-table-column>
 				    <el-table-column property="dose" label="剂量" align="center"></el-table-column>
+						<!-- 数量 -->
+						<!-- 备注 -->
 				  </el-table>
 					<p class="dialog-tip">系统审方结果</p>
 					<div class="opinion-area">
@@ -239,8 +296,9 @@
 					},
 					personCheckResult: {
 						executeType: ''
-					}
-				},						
+					},
+				},			
+				systemCheckOrPersonCheckList: [],
 				tableData: [],
 				// excel数据
 				column: [
@@ -263,10 +321,26 @@
 			}
 		},
 		mounted() {
+			this.getGroup();
 			this.getDepartment();
 			this.initTable();
 		},
 		methods: {
+			// 获取组别
+			getGroup() {
+				let apiurl = this.api.slelectDepartmentGroup;
+				this.common.getAxios(apiurl, this.returnGroup);
+			},
+			returnGroup(res) {
+				this.systemCheckOrPersonCheckList = res.data.data;
+			},
+			getGroupDepartment() {
+				let apiurl = this.api.slelectDepartment+'?departmentGroupid='+this.searchForm.systemCheckOrPersonCheck;
+				this.common.getAxios(apiurl, this.returnGroupDepartment);
+			},
+			returnGroupDepartment(res) {
+				this.departmentList = res.data.data;
+			},
 			// 表格隔行颜色设置
 			tableRowClassName({row, rowIndex}) {
 			  if (rowIndex%2 == 0) {
@@ -348,7 +422,7 @@
 			},
 			// 获取处方详情
 			getDesc() {
-				let apiurl = this.api.selectDocAdviceDetailsListOther+'?docAdviceId='+this.docAdviceId;
+				let apiurl = this.api.selectDocAdviceDetailsListOther+'?docAdviceDetailsId='+this.docAdviceId;
 				this.common.getAxios(apiurl, this.returnDesc);
 			},
 			returnDesc(res) {
@@ -413,8 +487,13 @@
 <style scoped>
 	/* 编辑表单 */
 	.view-dialog >>> .el-dialog{
-		width: 65%;
+		width: 70%;
 		margin: 0 auto;
+	}
+	.info-label{
+		width: 6rem;
+		display: inline-block;
+		text-align: right;
 	}
 	.view-dialog >>> .el-dialog__body{
 		padding-top: 0;
@@ -507,5 +586,8 @@
 	}
 	.search-btn:first-child{
 		margin-bottom: 1rem;
+	}
+	.margin-top{
+		margin-top: 1rem;
 	}
 </style>

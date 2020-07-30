@@ -2,19 +2,28 @@
 	<div class="all">
 		<el-container>
 		  <el-header>
-				<div class="header-area">
+				<div :class="{ headerArea: isTrouble }">
 					<div class="web-title">
 						<img src="../assets/img/logo.png" alt="">
 					</div>
 					<div class="user-info">
-						<div class="personal">
-							<img class="user-pic" src="../assets/img/user.png" alt="">
-							<p class="user-tip">李医生</p>
-						</div>
-						<div class="hospital">
-							<img class="user-pic" src="../assets/img/hospital.png" alt="">
-							<p class="user-tip">河南郑州医科大学附属医院</p>
-						</div>
+						<el-dropdown @command="handleCommand">
+							<div>
+								<div class="personal">
+									<img class="user-pic" src="../assets/img/user.png" alt="">
+									<p class="user-tip">{{userName}}</p>
+								</div>
+								<div class="hospital">
+									<img class="user-pic" src="../assets/img/hospital.png" alt="">
+									<p class="user-tip">河南郑州医科大学附属医院</p>
+								</div>
+							</div>
+							
+						  <el-dropdown-menu slot="dropdown">
+						    <el-dropdown-item command="a">退出登录</el-dropdown-item>
+						  </el-dropdown-menu>
+						</el-dropdown>
+						
 					</div>
 				</div>
 			</el-header>
@@ -26,7 +35,22 @@
 		    		class="el-menu-vertical-demo my-menu" 
 		    		:collapse="isCollapse"
 		    		active-text-color="#fff">
-		    		  <el-submenu :index="list.index" v-for="(list,index) in navList">
+							<el-submenu :index="10">
+							  <template slot="title">
+									<div class="nav-list">
+										<!-- <img class="nav-pic" :src="list.icon" alt=""> -->
+										<i class="nav-pic el-icon-monitor"></i>
+										<p class="nav-text">工作台</p>
+									</div>
+							  </template>
+							  <el-menu-item-group>
+							    <el-menu-item 
+									 :index="10-1" 
+									 @click="goPath('workBench')">工作台</el-menu-item>
+								</el-menu-item-group>
+							</el-submenu>
+						
+		    		  <el-submenu :index="list.index" v-for="(list,index) in navList" :key="index" v-show="list.userMenuLevelOneUsed==1">
 		    		    <template slot="title">
 		    					<div class="nav-list">
 		    						<!-- <img class="nav-pic" :src="list.icon" alt=""> -->
@@ -36,10 +60,11 @@
 		    		    </template>
 		    		    <el-menu-item-group>
 		    		      <el-menu-item 
-		    					 v-for="(children,childrenIndex) in list.children" 
+		    					 v-for="(children,childrenIndex) in list.menuLevelTwos" 
 		    					 :key="childrenIndex"
 		    					 :index="children.index" 
-		    					 @click="goPath(children.path,children)">{{children.name}}</el-menu-item>
+									 v-show="children.userMenuLevelTwoUsed==1"
+		    					 @click="goPath(children.url,children,index,childrenIndex)">{{children.name}}</el-menu-item>
 		    				</el-menu-item-group>
 		    		  </el-submenu>
 		    		</el-menu>
@@ -77,132 +102,48 @@
 		data() {
 			return {
 				isCollapse: true,
-				navList: [{
-					name: '工作台',
-					index: '1',
-					icon: 'el-icon-monitor',
-					iconPath: require('../assets/img/icon1.png'),
-					iconActive: require('../assets/img/icon11.png'),
-					children: [{
-						name: '工作台',
-						index: '1-1',
-						path: 'workBench'
-					}]
-				},{
-					name: '基本数据管理',
-					index: '2',
-					icon: 'el-icon-setting',
-					iconPath: require('../assets/img/icon2.png'),
-					iconActive: require('../assets/img/icon22.png'),
-					children: [{
-						name: '科室',
-						index: '2-1',
-						path: 'hospitalDepartmentAdmin'
-					},{
-						name: '员工',
-						index: '2-2',
-						path: 'staffAdmin'
-					},{
-						name: '药品',
-						index: '2-3',
-						path: 'drugAdmin'
-					},{
-						name: '审方规则',
-						index: '2-4',
-						path: 'trialRuleAdmin'
-					}]
-				},{
-					name: '查询',
-					index: '3',
-					icon: 'el-icon-search',
-					children: [{
-						name: '处方',
-						index: '3-1',
-						path: 'prescription'
-					},{
-						name: '工作量',
-						index: '3-2',
-						path: 'workload'
-					},{
-						name: '不合理用药',
-						index: '3-3',
-						path: 'unreasonableMedication'
-					},{
-						name: '查房记录',
-						index: '3-4',
-						path: 'roundupRecords'
-					},{
-						name: '监护记录',
-						index: '3-5',
-						path: 'guardianshipRecord'
-					},{
-						name: 'ADR检测记录',
-						index: '3-6',
-						path: 'ADRtestRecords'
-					}]
-				},{
-					name: '日常管理',
-					index: '4',
-					icon: 'el-icon-tickets',
-					children: [{
-						name: '排班',
-						index: '4-1',
-						path: 'shiftAdmin'
-					},{
-						name: '监护等级',
-						index: '4-2',
-						path: 'lavelAdmin'
-					}]
-				},{
-					name: '药学交班',
-					index: '5',
-					icon: 'el-icon-tickets',
-					children: [
-					// 	{
-					// 	name: '排班表',
-					// 	index: '5-1',
-					// 	path: 'scheduleAdmin'
-					// },
-					{
-						name: '交班',
-						index: '5-2',
-						path: 'reliefAdmin'
-					}]
-				}
-					     
-				],
-				windowList:[]
+				userId: sessionStorage.getItem('userId'),
+				userName: sessionStorage.getItem('userName'),
+				navList: [],
+				windowList:[],
+				isTrouble: false, // true ie11以下
 			}
 		},
+		created() {
+			this.isTrouble = this.common.judgeIE();
+			this.getMenu();
+			// 修改
+			// this.$root.ORDERID = "xxxxx"
+			// // 引用
+			// let orderId = this.$root.ORDERID 
+		},
 		methods: {
+			// 获取菜单权限
+			getMenu() {
+				let apiurl = this.api.selectUserPermission+'?userId='+this.userId;
+				this.common.postAxios(apiurl, {}, this.returnMenu);
+			},
+			returnMenu(res) {
+				console.log(res)
+				this.navList = res.data.data.menuLevelOnes;
+				sessionStorage.setItem('permissionList', JSON.stringify(res.data.data.menuLevelOnes));
+				this.$root.permissionList = res.data.data.menuLevelOnes;
+				console.log(this.$root.permissionList)
+			},
 			//前往页面
-			goPath(path,children) {
+			goPath(url,children,index,childrenIndex) {
+				console.log(index,childrenIndex);
 				let _this = this;
-				this.$router.push(path);
-				// let windowList = _this.windowList;
-				// windowList.map((item)=>{
-				// 	item.active='window-item window-no';
-				// })
-				// children.active='window-item';
-				// if(windowList.length != 0) {
-				// 	let isExit = windowList.find((list) => list.path==path)
-				// 	if(isExit == undefined) {
-				// 		_this.windowList.push(children)
-				// 	} else {
-				// 		console.log(isExit)
-				// 		windowList.forEach((item)=>{
-				// 			if(item.path == path) {
-				// 				item.active='window-item';
-				// 			}
-				// 			// console.log(item)
-				// 		})
-				// 		_this.windowList = windowList;
-				// 	}
-				// } else {
-				// 	this.windowList.push(children)
-				// }
-				// console.log('windowList',_this.windowList)
-			}
+				this.$router.push({path: url, query: {index: index, childrenIndex: childrenIndex}});
+			},
+			handleCommand(command){
+			  if(command=="a"){
+					// 退出登录
+					sessionStorage.clear();
+					localStorage.clear();
+					this.$router.push('/');
+			  }
+			},
 		}
 	}
 </script>
@@ -297,8 +238,8 @@
 		padding: 0rem !important;
 	}
 	.el-menu-item-group .el-menu-item{
-		padding: 0rem !important;
-		text-align: center;
+		padding: 0rem 0rem 0rem 3.2rem!important;
+		text-align: left;
 		height: 3.8rem;
 		line-height: 3.8rem;
 	}
@@ -365,7 +306,21 @@
 		right: 4rem;
 		display: inline-block;
 	}
-	.header-area{
+	.headerArea{
+		position: fixed;
+		width: 100%;
+		height: 7rem;
+		top: 0;
+		z-index: 1;
+		background: #F3F3F3;
+	}
+	.el-table__header{ width: 100% !important; } .el-table__body{ width: 100% !important; }
+	.personal, .hospital{
+		display: inline-block;
+	}
+	.el-dropdown-menu{
+		width: 30rem;
+		margin-top: 0;
 	}
 	/* .window-nav{
 		

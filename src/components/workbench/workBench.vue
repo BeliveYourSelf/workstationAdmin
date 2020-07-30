@@ -26,37 +26,16 @@
 						style="width: 100%"
 						:row-class-name="tableRowClassName"
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-						<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+						<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
-						<el-table-column prop="lavel" label="类型" align="center"></el-table-column>
-						<el-table-column prop="bed" label="分类" align="center"></el-table-column>
-						<el-table-column prop="name" label="处方号" align="center"></el-table-column>
-						<el-table-column prop="sex" label="药品" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="age" label="作用药品" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="diagnosis" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<el-table-column prop="dayNum" label="来源" align="center" :show-overflow-tooltip="true"></el-table-column>
-						<!-- <el-table-column fixed="right" label="操作" width="120" align="center">
-							<template slot-scope="scope">
-								<el-button
-									@click.native.prevent="deleteRow(scope.$index, tableData)"
-									type="text"
-									size="small">
-									<span v-if="scope.row.status == 1" class="text-my-gray">冻结</span>
-									<span v-else-if="scope.row.status == 2" class="text-orange">解冻</span>
-								</el-button>
-							</template>
-						</el-table-column> -->
+						<el-table-column prop="type" label="类型" align="center"></el-table-column>
+						<el-table-column prop="docAdviceDetailId" label="处方号" align="center"></el-table-column>
+						<el-table-column prop="drugA" label="药品" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="drugB" label="作用药品" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="description" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
+						<el-table-column prop="origin" label="来源" align="center" :show-overflow-tooltip="true"></el-table-column>
+						
 				 </el-table>
-				 <div class="block page-area">
-					 <el-pagination
-						 @size-change="handleSizeChange"
-						 @current-change="handleCurrentChange"
-						 :current-page="currentPage"
-						 :page-sizes="[15, 20, 50, 100]"
-						 :page-size="length"
-						 layout="total, sizes, prev, pager, next, jumper"
-						 :total="total">
-					 </el-pagination>
 				 </div>
 			</div>
 		</div>
@@ -75,10 +54,10 @@
 				total: 400,
 				// 病人数量信息统计
 				patientNumList: [
-					{tip: '新增病人',num: 4,backgroundColor: '#FF863D',icon: require('../../assets/img/workPer.png'),},
-					{tip: '一级监护',num: 44,backgroundColor: '#A660D2',icon: require('../../assets/img/work1.png'),},
-					{tip: '二级监护',num: 43,backgroundColor: '#5ADC9C',icon: require('../../assets/img/work2.png'),},
-					{tip: '三级监护',num: 100,backgroundColor: '#72BEFF',icon: require('../../assets/img/work3.png'),},
+					// {tip: '新增病人',num: 4,backgroundColor: '#FF863D',icon: require('../../assets/img/workPer.png'),},
+					// {tip: '一级监护',num: 44,backgroundColor: '#A660D2',icon: require('../../assets/img/work1.png'),},
+					// {tip: '二级监护',num: 43,backgroundColor: '#5ADC9C',icon: require('../../assets/img/work2.png'),},
+					// {tip: '三级监护',num: 100,backgroundColor: '#72BEFF',icon: require('../../assets/img/work3.png'),},
 				],
 				// 待完成任务数据
 				pieData: [{
@@ -102,10 +81,44 @@
 			}
 		},
 		mounted() {
+			this.getTop();
 			this.drawPie();
 			this.drawLine();
 		},
 		methods: {
+			// 新增病人和监护等级显示
+			getTop() {
+				let apiurl = this.api.newlyAddedPatientsAndMonitorLevel;
+				this.common.getAxios(apiurl, this.returnTop);
+			},
+			returnTop(res) {
+				this.tableData = res.data.data.irrationalDrugUseVOList;
+				this.patientNumList[0] = {
+					tip: '新增病人',
+					num: res.data.data.newlyAddedPatientCount,
+					icon: require('../../assets/img/workPer.png'),
+				}
+				let list = res.data.data.monitorLevelCountList;
+				for(var i in list) {
+					var icon = '';
+					if(i%4 == 1) {
+						icon = require('../../assets/img/work2.png');
+					} else if(i%4 == 2) {
+						icon = require('../../assets/img/work3.png');
+					} if(i%4 == 3) {
+						icon = require('../../assets/img/workPer.png');
+					} if(i%4 == 0) {
+						icon = require('../../assets/img/work1.png');
+					}
+					let obj = {
+						tip: list[i].name,
+						num: list[i].monitorCount,
+						icon: icon
+					}
+					this.patientNumList.push(obj);
+				}
+					console.log(this.patientNumList)
+			},
 			// 表格隔行颜色设置
 			tableRowClassName({row, rowIndex}) {
         if (rowIndex%2 == 0) {
@@ -215,41 +228,41 @@
 					},
 					// x轴设置
 					xAxis: {
-							type: 'category',
-							data: ['用药教育', '药学会诊', '医嘱干预信', '日常监护', '药学查房', '合理用药'],
-							/*改变x轴颜色*/
-							axisLine: {
-								lineStyle: {
-									color: '#6791E5',
-									width: 1, //这里是为了突出显示加上的  
-								}
-							},
-							/*改变x轴刻度标签颜色*/
-							axisLabel: {
-                show: true,
-                textStyle: {
-                  color:'#333333' //这里用参数代替了
-                }
-              },
+						type: 'category',
+						data: ['用药教育', '药学会诊', '医嘱干预信', '日常监护', '药学查房', '合理用药'],
+						/*改变x轴颜色*/
+						axisLine: {
+							lineStyle: {
+								color: '#6791E5',
+								width: 1, //这里是为了突出显示加上的  
+							}
+						},
+						/*改变x轴刻度标签颜色*/
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color:'#333333' //这里用参数代替了
+							}
+						},
 					},
 					// y轴设置
 					yAxis: {
-							type: 'value',
-							splitLine: {show: false},
-							/*改变y轴颜色*/
-							axisLine: {
-								lineStyle: {
-									color: '#6791E5',
-									width: 1, //这里是为了突出显示加上的  
-								}
-							},
-							/*改变y轴刻度标签颜色*/
-							axisLabel: {
-                show: true,
-                textStyle: {
-                  color:'#333333' //这里用参数代替了
-                }
-              },
+						type: 'value',
+						splitLine: {show: false},
+						/*改变y轴颜色*/
+						axisLine: {
+							lineStyle: {
+								color: '#6791E5',
+								width: 1, //这里是为了突出显示加上的  
+							}
+						},
+						/*改变y轴刻度标签颜色*/
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color:'#333333' //这里用参数代替了
+							}
+						},
 					},
 					series: [{
 						itemStyle: {
@@ -280,6 +293,7 @@
 		height: 10.05rem;
 		border-radius: 0.3rem;
 		color: #fff;
+		margin-bottom: 1rem;
 	}
 	.patient-item:not(:first-child) {
 		margin-left: 2rem;
@@ -314,7 +328,7 @@
 		background: #fff;
 		border-radius: 3rem;
 		box-shadow: 0rem 0.1rem 1rem 0rem rgba(4,0,0,0.1);
-		margin-top: 2.8rem;
+		margin-top: 1.8rem;
 	}
 	.pie-echarts{
 		width: 40.2rem;
@@ -323,8 +337,21 @@
 		width: calc(100% - 43rem);
 		margin-left: 1.8rem;
 	}
-	
-	
-	
+	.patient-item:nth-child(n){
+		background-color: #FF863D;
+		margin-left: 0;
+	}
+	.patient-item:nth-child(2n){
+		background-color: #A660D2;
+		margin-left: 2rem;
+	}
+	.patient-item:nth-child(3n){
+		background-color: #5ADC9C;
+		margin-left: 2rem;
+	}
+	.patient-item:nth-child(4n){
+		background-color: #72BEFF;
+		margin-left: 2rem;
+	}
 	
 </style>

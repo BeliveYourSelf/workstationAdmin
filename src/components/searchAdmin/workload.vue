@@ -27,8 +27,14 @@
 					<!-- 搜索区域 -->
 					<div class="search-area">
 						<el-row>
-							<el-col :span="20">
+							<el-col :span="2" class="search-btn-area left-col">
+								<el-tooltip class="item" effect="dark" content="导出打印" placement="top-start">
+									<el-button class="el-icon-download" type="primary"></el-button>
+								</el-tooltip>
+							</el-col>
+							<el-col :span="22" class="right-col">
 								<el-date-picker
+								  @change="initTable"
 									v-model="searchForm.searchData"
 									type="daterange"
 									range-separator="至"
@@ -36,9 +42,6 @@
 									end-placeholder="结束日期"
 									class="data-picker-set">
 								</el-date-picker>
-							</el-col>
-							<el-col :span="4" class="search-btn-area">
-								<el-button class="search-btn" type="primary">导出打印</el-button>
 							</el-col>
 						</el-row>
 					</div>
@@ -51,7 +54,7 @@
 								:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}"
 								:summary-method="getSummaries"
 								show-summary>
-								<el-table-column type="index" :index="indexMethod" label="序号" width="100" align="center">
+								<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 								</el-table-column>
 								<el-table-column prop="code" label="工号" align="center"></el-table-column>
 								<el-table-column prop="departmentName" label="姓名" align="center"></el-table-column>

@@ -31,7 +31,7 @@ export default {
 		min-height: calc(100% - 5rem);
 		/* height: calc(100% - 5rem); */
 		background: #fff;
-		border-radius: 0 3rem 3rem 3rem;
+		border-radius: 3rem;
 		width: 100%;
 		padding-top: 1.5rem;
 		padding-bottom:1.5rem;
@@ -86,6 +86,9 @@ export default {
 	}
 	.text-orange{
 		color: #ED7206;
+	}
+	.textPrimary{
+		color: #66b1ff;
 	}
 	.width-style{
 		width: 95%;
@@ -159,5 +162,17 @@ export default {
 	.el-breadcrumb{
 		margin-bottom: 1.5rem;
 		margin-left: 2rem;
+	}
+	.right-col{
+		text-align: right;
+	}
+	.left-col{
+		text-align: left;
+	}
+	.left-col .el-button{
+		padding: 0.9rem 1rem;
+	}
+	.margin-left{
+		margin-left: 1rem;
 	}
 </style>

@@ -8,37 +8,40 @@
 			<!-- 搜索区域 -->
 			<div class="search-area">
 				<el-row>
-					<el-col :span="20">
+					<el-col :span="2" class="search-btn-area left-col">
+						<el-tooltip class="item" effect="dark" content="提交" placement="top-start" v-show="insertSet">
+							<el-button class="el-icon-check search-btn" type="primary"></el-button>
+						</el-tooltip>
+						<el-tooltip class="item" effect="dark" content="创建排班表" placement="top-start" v-show="insertTableSet">
+							<el-button class="el-icon-plus add-schedule" type="primary" @click="addSchedule"></el-button>
+						</el-tooltip>
+					</el-col>
+					<el-col :span="22" class="right-col">
 						<el-select v-model="searchForm.name" placeholder="请选择排班表">
 							<el-option v-for="list in scheduleNameList" :value="list.id" :key="list.id" :label="list.schedulingName"
 							 clearable filterable>
 							</el-option>
 						</el-select>
-						<el-button class="el-icon-plus add-schedule" type="primary" plain @click="addSchedule">创建排班表</el-button>
-
-
-					</el-col>
-					<el-col :span="4" class="search-btn-area">
-						<el-button class="search-btn" type="primary">提交排班</el-button>
 					</el-col>
 				</el-row>
 			</div>
 			<div class="table-name">药师排班2020-06-01-2020-06-06（第1周）</div>
 			<div class="table-input-tip">
-				<span class="input-tip">A班 08:00-14:00</span>
-				<span class="input-tip">B班 14:00-22:00</span>
-				<span class="input-tip">C班 22:00-08:00</span>
+				<span class="input-tip">早班 08:00-14:00</span>
+				<span class="input-tip">中班 14:00-22:00</span>
+				<span class="input-tip">晚班 22:00-08:00</span>
 			</div>
 			<div class="test-main">
-
+				<!-- 删除red -->
+				<!-- 编辑blue -->
 				<el-table class="main-table" :data="tableData" style="width: 100%" :row-class-name="tableRowClassName"
 				 :header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-					<el-table-column prop="name" label="药师姓名" align="center"></el-table-column>
-					<el-table-column label="时段" align="center" :show-overflow-tooltip="true">
+					<el-table-column fixed prop="name" label="药师姓名" align="center"></el-table-column>
+					<el-table-column fixed label="时段" align="center" :show-overflow-tooltip="true">
 						<template slot-scope="scope">
-							<p class="shift-radio">A</p>
-							<p class="shift-radio">B</p>
-							<p class="shift-radio">C</p>
+							<p class="shift-radio">早</p>
+							<p class="shift-radio">中</p>
+							<p class="shift-radio">晚</p>
 						</template>
 					</el-table-column>
 					<template v-for="(item, index) in tableHeader">
@@ -245,9 +248,18 @@
 					},
 				],
 				baseList: [],
+				insertSet: '',
+				insertTableSet: '',
+				updateSet: ''
 			}
 		},
 		mounted() {
+			let permissionList = JSON.parse(sessionStorage.getItem('permissionList'));
+			let index = this.$route.query.index;
+			let childrenIndex = this.$route.query.childrenIndex;
+			this.insertTableSet = this.common.permissionSet(index,childrenIndex,permissionList,'insertTable');
+			this.insertSet = this.common.permissionSet(index,childrenIndex,permissionList,'insert');
+			this.updateSet = this.common.permissionSet(index,childrenIndex,permissionList,'update');
 			this.getDate();
 			this.getNameList();
 			this.getDetails();
@@ -460,7 +472,7 @@
 	}
 
 	.add-schedule {
-		margin-left: 1.5rem;
+		margin-left: 1rem;
 	}
 
 	.my-header {
