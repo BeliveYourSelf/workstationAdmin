@@ -40,6 +40,8 @@ export default({
 	getSchedulingCategoryAndDetailsLastTime: root + 'schedulingCategoryManagementController/getSchedulingCategoryAndDetailsLastTime',
 	// 新增排班大类
 	insertSchedulingCategory: root + 'schedulingCategoryManagementController/insertSchedulingCategory',
+	// 更新排班
+	updateSchedulingDetailList: root + 'schedulingDetailsManagementController/updateSchedulingDetailList',
 	// 处方-组别不分页
 	slelectDepartmentGroup: root + 'departmentGroupController/slelectDepartmentGroup',
 	// 处方-组别查科室

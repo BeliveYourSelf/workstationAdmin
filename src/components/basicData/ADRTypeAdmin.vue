@@ -2,7 +2,7 @@
 	<div class="con-area">
 		<el-breadcrumb separator-class="el-icon-arrow-right">
 		  <el-breadcrumb-item>基本数据管理</el-breadcrumb-item>
-		  <el-breadcrumb-item>ADR检测类型</el-breadcrumb-item>
+		  <el-breadcrumb-item>ADR监测类型</el-breadcrumb-item>
 		</el-breadcrumb>
 		<div class="width-style">
 			<!-- 搜索区域 -->
@@ -34,7 +34,7 @@
 						:header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
 						<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 						</el-table-column>
-						<el-table-column prop="adrMonitorType" label="ADR检测类型" align="center"></el-table-column>
+						<el-table-column prop="adrMonitorType" label="ADR监测类型" align="center"></el-table-column>
 						<el-table-column fixed="right" label="操作" width="120" align="center">
 							<template slot-scope="scope">
 								<el-button
@@ -67,13 +67,13 @@
 		</div>
 		<!-- 编辑弹窗 -->
 		<el-dialog :title="formType==1?'新增':'编辑'" :visible.sync="dialogFormVisible" :before-close="clearForm">
-		  <el-form :model="editForm" class="hospital-edit" ref="editForm">
-		    <el-form-item label="类型名称:" :label-width="formLabelWidth" prop="name">
-		      <el-input type="textarea" v-model="editForm.adrMonitorType" autocomplete="off" ></el-input>
+		  <el-form :model="editForm" :rules="rules" class="hospital-edit" ref="editForm">
+		    <el-form-item label="类型名称:" :label-width="formLabelWidth" prop="adrMonitorType">
+		      <el-input maxlength="20" type="textarea" v-model="editForm.adrMonitorType" autocomplete="off" ></el-input>
 		    </el-form-item>
 		  </el-form>
 		  <div slot="footer" class="dialog-footer">
-		    <el-button type="primary" @click="saveSet">确 定</el-button>
+		    <el-button type="primary" @click="saveSet('editForm')">确 定</el-button>
 		    <el-button @click="clearForm">取 消</el-button>
 		  </div>
 		</el-dialog>
@@ -97,9 +97,16 @@
 				dialogFormVisible: false,
 				// 编辑表单
 				editForm: {
-					name:'',
+					adrMonitorType:'',
 					weights: '',
 					descript:''
+				},
+				rules: {
+					adrMonitorType: [{
+						required: true,
+						message: '请输入类型名称',
+						trigger: 'blur'
+					}]
 				},
 				groupList: [{
 					name: '1',
@@ -207,16 +214,24 @@
 				_this.dialogFormVisible = true;
 				_this.formType = 1;
 			},
-			saveSet() {
-				if(this.formType == 1) {
-					let apiurl = this.api.insertADRMonitorType;
-					let usuallyLanguage = this.editForm;
-					this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
-				} else if(this.formType == 2) {
-					let apiurl = this.api.updateADRMonitorType;
-					let usuallyLanguage = this.editForm;
-					this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
-				} 
+			saveSet(formName) {
+				let _this = this;
+				this.$refs[formName].validate((valid) => {
+				  if (valid) {
+						if(this.formType == 1) {
+							let apiurl = this.api.insertADRMonitorType;
+							let usuallyLanguage = this.editForm;
+							this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
+						} else if(this.formType == 2) {
+							let apiurl = this.api.updateADRMonitorType;
+							let usuallyLanguage = this.editForm;
+							this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
+						} 
+				  } else {
+				    console.log('error submit!!');
+				    return false;
+				  }
+				});
 			},
 			returnSave(res) {
 				if(res.data.status) {

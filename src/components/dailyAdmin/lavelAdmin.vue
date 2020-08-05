@@ -73,7 +73,7 @@
 		</div>
 		<!-- 编辑弹窗 -->
 		<el-dialog :title="formType==1?'新增':'编辑'" :visible.sync="dialogFormVisible" :before-close="clearForm">
-		  <el-form :model="editForm" class="hospital-edit" ref="editForm">
+		  <el-form :model="editForm" :rules="rules" class="hospital-edit" ref="editForm">
 		    <el-form-item label="监护等级名称:" :label-width="formLabelWidth" prop="name">
 		      <el-input v-model="editForm.name" autocomplete="off" ></el-input>
 		    </el-form-item>
@@ -85,7 +85,7 @@
 				</el-form-item>
 		  </el-form>
 		  <div slot="footer" class="dialog-footer">
-		    <el-button type="primary" @click="saveSet">确 定</el-button>
+		    <el-button type="primary" @click="saveSet('editForm')">确 定</el-button>
 		    <el-button @click="clearForm">取 消</el-button>
 		  </div>
 		</el-dialog>
@@ -112,6 +112,23 @@
 					name:'',
 					weight: '',
 					descript:''
+				},
+				rules: {
+					name: [{
+						required: true,
+						message: '请输入监护等级名称',
+						trigger: 'blur'
+					}],
+					weight: [{
+						required: true,
+						message: '请选择监护等级权重',
+						trigger: 'blur'
+					}],
+					descript: [{
+						required: true,
+						message: '请输入监护等级描述',
+						trigger: 'blur'
+					}]
 				},
 				groupList: [{
 					name: '1',
@@ -219,10 +236,18 @@
 				_this.dialogFormVisible = true;
 				_this.formType = 1;
 			},
-			saveSet() {
-				let apiurl = this.api.insertMonitorLevelDetailsManagement;
-				let monitorLevelDetails = this.editForm;
-				this.common.postAxios(apiurl, monitorLevelDetails, this.returnSave);
+			saveSet(formName) {
+				let _this = this;
+				this.$refs[formName].validate((valid) => {
+				  if (valid) {
+						let apiurl = this.api.insertMonitorLevelDetailsManagement;
+						let monitorLevelDetails = this.editForm;
+						this.common.postAxios(apiurl, monitorLevelDetails, this.returnSave);
+				  } else {
+				    console.log('error submit!!');
+				    return false;
+				  }
+				});
 			},
 			returnSave(res) {
 				if(res.data.status) {
@@ -280,5 +305,9 @@
 	.hospital-edit{
 		width: 50%;
 		margin: 0 auto;
+	}
+	.hospital-edit >>> .el-rate {
+		height: 2rem;
+		line-height: 2;
 	}
 </style>

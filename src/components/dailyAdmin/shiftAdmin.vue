@@ -9,15 +9,16 @@
 			<div class="search-area">
 				<el-row>
 					<el-col :span="2" class="search-btn-area left-col">
-						<el-tooltip class="item" effect="dark" content="提交" placement="top-start" v-show="insertSet">
+						<!-- <el-tooltip class="item" effect="dark" content="提交" placement="top-start" v-show="updateSet">
 							<el-button class="el-icon-check search-btn" type="primary"></el-button>
-						</el-tooltip>
+						</el-tooltip> -->
 						<el-tooltip class="item" effect="dark" content="创建排班表" placement="top-start" v-show="insertTableSet">
 							<el-button class="el-icon-plus add-schedule" type="primary" @click="addSchedule"></el-button>
 						</el-tooltip>
+						
 					</el-col>
 					<el-col :span="22" class="right-col">
-						<el-select v-model="searchForm.name" placeholder="请选择排班表">
+						<el-select v-model="searchForm.schedulingCategoryId" placeholder="请选择排班表" @change="getDetails">
 							<el-option v-for="list in scheduleNameList" :value="list.id" :key="list.id" :label="list.schedulingName"
 							 clearable filterable>
 							</el-option>
@@ -25,41 +26,57 @@
 					</el-col>
 				</el-row>
 			</div>
-			<div class="table-name">药师排班2020-06-01-2020-06-06（第1周）</div>
+			<div class="table-name">{{schedulingName}}</div>
 			<div class="table-input-tip">
-				<span class="input-tip">早班 08:00-14:00</span>
-				<span class="input-tip">中班 14:00-22:00</span>
-				<span class="input-tip">晚班 22:00-08:00</span>
+				<span class="input-tip">A班 08:00-14:00</span>
+				<span class="input-tip">B班 14:00-22:00</span>
+				<span class="input-tip">C班 22:00-08:00</span>
 			</div>
 			<div class="test-main">
 				<!-- 删除red -->
 				<!-- 编辑blue -->
 				<el-table class="main-table" :data="tableData" style="width: 100%" :row-class-name="tableRowClassName"
 				 :header-cell-style="{background:'#F5F6FA',color:'#000',fontWeight:'bold'}">
-					<el-table-column fixed prop="name" label="药师姓名" align="center"></el-table-column>
+					<el-table-column fixed prop="pharmacistName" label="药师姓名" align="center"></el-table-column>
+					
 					<el-table-column fixed label="时段" align="center" :show-overflow-tooltip="true">
 						<template slot-scope="scope">
-							<p class="shift-radio">早</p>
-							<p class="shift-radio">中</p>
-							<p class="shift-radio">晚</p>
+							<!-- <p class="shift-radio" v-for="list in timeList">{{list.timeInterval}}</p> -->
+							<p class="shift-radio">A</p>
+							<p class="shift-radio">B</p>
+							<p class="shift-radio">C</p>
 						</template>
 					</el-table-column>
-					<template v-for="(item, index) in tableHeader">
-						<el-table-column :label="item.date" align="center" min-width="120px">
+					<template v-for="(item, index) in tableData[0].schedulingDetailList">
+						<el-table-column align="center" min-width="120px">
 							<template slot="header" slot-scope="scope">
 								<p class="my-header">{{item.date}}</p>
 								<p class="my-header">{{item.weekend}}</p>
 							</template>
-							<template>
-								<el-radio-group v-model="item.shiftValue">
-									<el-radio class="shift-radio" label="1">&nbsp;</el-radio>
-									<el-radio class="shift-radio" label="2">&nbsp;</el-radio>
-									<el-radio class="shift-radio" label="3">&nbsp;</el-radio>
+							<template slot-scope="scope">
+								<el-radio-group 
+								 v-model="scope.row.schedulingDetailList[index].timeInterval" 
+								 >
+								 <!-- @change="((label,row)=>{changeTime(label,scope.row.schedulingDetailList[index])})" -->
+									<el-radio 
+									 class="shift-radio" 
+									 label="A" 
+									 @click.native.prevent="redioClick('A',scope.row.schedulingDetailList[index].timeInterval,scope.$index,index)"
+									 :disabled="!updateSet">&nbsp;</el-radio>
+									<el-radio 
+									 class="shift-radio" 
+									 label="B" 
+									 @click.native.prevent="redioClick('B',scope.row.schedulingDetailList[index].timeInterval,scope.$index,index)"
+									 :disabled="!updateSet">&nbsp;</el-radio>
+									<el-radio
+									 class="shift-radio" 
+									 label="C" 
+									 @click.native.prevent="redioClick('C',scope.row.schedulingDetailList[index].timeInterval,scope.$index,index)"
+									 :disabled="!updateSet">&nbsp;</el-radio>
 								</el-radio-group>
 							</template>
 						</el-table-column>
 					</template>
-
 
 				</el-table>
 				<div class="block page-area">
@@ -75,13 +92,19 @@
 						<el-input v-model="addForm.name" autocomplete="off"></el-input>
 					</el-form-item>
 					<el-form-item label="日期" :label-width="labelWidth">
-						<el-date-picker v-model="searchForm.searchData" type="daterange" range-separator="至" start-placeholder="开始日期"
-						 end-placeholder="结束日期" class="data-picker-set">
+						<el-date-picker
+						 v-model="addForm.searchData" 
+						 type="daterange" 
+						 range-separator="至" 
+						 start-placeholder="开始日期"
+						 end-placeholder="结束日期" 
+						 class="data-picker-set"
+						 value-format="yyyy-MM-dd">
 						</el-date-picker>
 					</el-form-item>
 				</el-form>
 				<div slot="footer" class="dialog-footer">
-					<el-button type="primary" @click="clearForm">确 定</el-button>
+					<el-button type="primary" @click="saveTable">确 定</el-button>
 					<el-button @click="clearForm">取 消</el-button>
 				</div>
 			</el-dialog>
@@ -97,243 +120,138 @@
 				page: 1,
 				currentPage: 1,
 				length: 15,
-				total: 400,
+				total: 0,
 				dialogFormVisible: false, //false
 				labelWidth: '80px',
 				searchForm: {
 					searchData: '',
 					code: '',
-					name: ''
+					name: '',
+					schedulingCategoryId: ''
 				},
 				addForm: {
 					searchData: '',
 					name: ''
 				},
-				tableData: [{
-					date: '2020-06-12 09:23',
-					type: '医疗器械',
-					name: '王晓红',
-					userName: '王晓雯',
-					room: '心血管内科',
-					bed: 'Z-110',
-					lavel: '一级',
-					describe: '这是一个检测记录的描述这是一个检测记录的描述这是一个检测记录的描述'
-				}],
+				tableData: [],
+				timeList: [],
 				scheduleNameList: [],
 				tableHeader: [],
-				// 日期英文转数字
-				englishInt: [{
-						english: "one",
-						int: '01'
-					},
-					{
-						english: "two",
-						int: '02'
-					},
-					{
-						english: "three",
-						int: '03'
-					},
-					{
-						english: "four",
-						int: '04'
-					},
-					{
-						english: "five",
-						int: '05'
-					},
-					{
-						english: "six",
-						int: '06'
-					},
-					{
-						english: "seven",
-						int: '07'
-					},
-					{
-						english: "eight",
-						int: '08'
-					},
-					{
-						english: "nine",
-						int: '09'
-					},
-					{
-						english: "ten",
-						int: '10'
-					},
-					{
-						english: "eleven",
-						int: '11'
-					},
-					{
-						english: "twelve",
-						int: '12'
-					},
-					{
-						english: "thirteen",
-						int: '13'
-					},
-					{
-						english: "fourteen",
-						int: '14'
-					},
-					{
-						english: "fiveteen",
-						int: '15'
-					},
-					{
-						english: "sixteen",
-						int: '16'
-					},
-					{
-						english: "seventeen",
-						int: '17'
-					},
-					{
-						english: "eighteen",
-						int: '18'
-					},
-					{
-						english: "nineteen",
-						int: '19'
-					},
-					{
-						english: "twenty",
-						int: '20'
-					},
-					{
-						english: "twentyOne",
-						int: '21'
-					},
-					{
-						english: "twentyTwo",
-						int: '22'
-					},
-					{
-						english: "twentyThree",
-						int: '23'
-					},
-					{
-						english: "twentyFour",
-						int: '24'
-					},
-					{
-						english: "twentyFive",
-						int: '25'
-					},
-					{
-						english: "twentySix",
-						int: '26'
-					},
-					{
-						english: "twentySeven",
-						int: '27'
-					},
-					{
-						english: "twentyEight",
-						int: '28'
-					},
-					{
-						english: "twentyNine",
-						int: '29'
-					},
-					{
-						english: "thirty",
-						int: '30'
-					},
-					{
-						english: "thirtyOne",
-						int: '31'
-					},
-				],
 				baseList: [],
 				insertSet: '',
 				insertTableSet: '',
-				updateSet: ''
+				updateSet: '',
+				schedulingCategoryId: '',
+				radio: '',
+				schedulingName: ''
 			}
 		},
 		mounted() {
 			let permissionList = JSON.parse(sessionStorage.getItem('permissionList'));
 			let index = this.$route.query.index;
 			let childrenIndex = this.$route.query.childrenIndex;
-			this.insertTableSet = this.common.permissionSet(index,childrenIndex,permissionList,'insertTable');
+			this.insertTableSet = this.common.permissionSet(index,childrenIndex,permissionList,'insert_table');
 			this.insertSet = this.common.permissionSet(index,childrenIndex,permissionList,'insert');
 			this.updateSet = this.common.permissionSet(index,childrenIndex,permissionList,'update');
-			this.getDate();
 			this.getNameList();
 			this.getDetails();
 		},
 		methods: {
+			redioClick(e,originalVal,indexOne,indexTwo) {
+				console.log(e,originalVal,indexOne,indexTwo)
+				e == originalVal?
+				(this.tableData[indexOne].schedulingDetailList[indexTwo].timeInterval = 'D'):
+				(this.tableData[indexOne].schedulingDetailList[indexTwo].timeInterval = e);
+				console.log(this.tableData[indexOne].schedulingDetailList[indexTwo])
+				this.changeTime(this.tableData[indexOne].schedulingDetailList[indexTwo]);
+			},
+			// 更新排班
+			changeTime(row) {
+				console.log(row);
+				let apiurl = this.api.updateSchedulingDetailList;
+				row.day = row.day<10&&row.day.length>1?row.day.substr(1):row.day;
+				row.month = row.month<10&&row.month.length>1?row.month.substr(1):row.month;
+				console.log(row.day)
+				let schedulingDetail = {
+					timeInterval: row. timeInterval,
+					year: row.year,
+					month: row.month,
+					day: row.day,
+					used: row.used,
+					userId: row.userId,
+					schedulingId: this.schedulingCategoryId
+				}
+				this.common.putAxios(apiurl, schedulingDetail, this.returnUpdate);
+			},
+			returnUpdate(res) {
+				if(res.data.status) {
+					this.$message.success('成功');
+				} else {
+					this.$message.error(res.data.msg);
+				}
+			},
+			// 新增排班表
+			saveTable() {
+				let apiurl = this.api.insertSchedulingCategory;
+				let schedulingCategory = {
+					startTime: this.addForm.searchData[0],
+					endTime: this.addForm.searchData[1],
+					schedulingName: this.addForm.name
+				}
+				this.common.postAxios(apiurl, schedulingCategory, this.returnSaveTable)
+			},
+			returnSaveTable(res) {
+				if(res.data.status) {
+					this.$message.success('新增成功');
+					this.dialogFormVisible = false;
+					this.addForm = {
+						name: '',
+						searchData: ''
+					}
+					this.getNameList();
+				} else {
+					this.$message.error(res.data.msg);
+				}
+			},
 			// 获取排班表明细
 			getDetails() {
-				let apiurl = this.api.getSchedulingCategoryAndDetailsLastTime + '?schedulingCategoryId=1';
+				let apiurl = this.api.getSchedulingCategoryAndDetailsLastTime 
+										+ '?pageNum='+this.page
+										+ '&pageSize='+this.length
+				if(this.searchForm.schedulingCategoryId != '') {
+					apiurl+='&schedulingCategoryId='+this.searchForm.schedulingCategoryId;
+				}
+										// + '&schedulingCategoryId=1';
 				this.common.getAxios(apiurl, this.returnDetails);
 			},
 			returnDetails(res) {
-				// console.log(res)
-				// let englishInt = this.englishInt;
-				let schedulingDetailsList = res.data.data.schedulingDetailsList;
-				let baseList = [];
-				for (var i in schedulingDetailsList) {
-					if (i == 0 || schedulingDetailsList[i].pharmacistId != schedulingDetailsList[i - 1].pharmacistId) {
-						var obj = {
-							schedulingCategoryId: schedulingDetailsList[i].schedulingCategoryId,
-							pharmacistId: schedulingDetailsList[i].pharmacistId,
-							pharmacistName: schedulingDetailsList[i].pharmacistName,
-							schedulingDetailsList: [],
-							englishInt: this.englishInt
-						}
-						baseList.push(obj)
-					}
-					for (var b in baseList) {
-						// baseList[b].schedulingDetailsList = [];
-						if (baseList[b].pharmacistId == schedulingDetailsList[i].pharmacistId) {
-							baseList[b].schedulingDetailsList.push(schedulingDetailsList[i]);
-						}
-					}
-				}
-				this.handleBaseList(baseList)
-			},
-			//处理基本数组
-			handleBaseList(baseList) {
-				var monthKeys = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
-					"thirteen", "fourteen", "fiveteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twentyOne",
-					"twentyTwo", "twentyThree", "twentyFour", "twentyFive", "twentySix", "twentySeven", "twentyEight", "twentyNine",
-					"thirty", "thirtyOne"
-				]
-				var arr = [];
-				for (var i = 0; i < baseList.length; i++) {
-					//遍历基础数组下值班表数组
-					var obj = {
-						pharmacistId: baseList[i].pharmacistId,
-						pharmacistName: baseList[i].pharmacistName,
-						schedulingCategoryId: baseList[i].schedulingCategoryId
-					}
-					var schedulingDetailsList = baseList[i].schedulingDetailsList;
-					var englishInt = baseList[i].englishInt;
-					obj.englishInt=this.handleEnglishInt(schedulingDetailsList, englishInt);
-					arr.push(obj)
-				}
-				console.log(JSON.stringify(obj))
-			},
-			handleEnglishInt(schedulingDetailsList, englishInt) {
-				var arr = [];
-				for (var k = 0; k < schedulingDetailsList.length; k++) {
-					var timeInterval = schedulingDetailsList[k].timeInterval;
-					var year = schedulingDetailsList[k].year;
-					var month = schedulingDetailsList[k].month;
-					//遍历基础数组下英文日期数组
-					for (var j = 0; j < englishInt.length; j++) {
-						englishInt[j].year = year;
-						englishInt[j].month = month;
-						if (schedulingDetailsList[k][englishInt[j].english]) {
-							englishInt[j].isJob = true;
-							englishInt[j].timeInterval = timeInterval;
-						}
+				let _this = this;
+				this.total = res.data.data.total;
+				this.schedulingName = res.data.data.schedulingName;
+				let schedulingDetailsHeadList = res.data.data.schedulingDetailsHeadList;
+				this.schedulingCategoryId=schedulingDetailsHeadList[0].schedulingCategoryId;
+				for(var i in schedulingDetailsHeadList) {
+					for(var j in schedulingDetailsHeadList[i].schedulingDetailList) {
+						schedulingDetailsHeadList[i].schedulingDetailList[j].month
+						=schedulingDetailsHeadList[i].schedulingDetailList[j].month<10
+						?'0'+schedulingDetailsHeadList[i].schedulingDetailList[j].month:
+						schedulingDetailsHeadList[i].schedulingDetailList[j].month;
+						schedulingDetailsHeadList[i].schedulingDetailList[j].day
+						=schedulingDetailsHeadList[i].schedulingDetailList[j].day<10
+						?'0'+schedulingDetailsHeadList[i].schedulingDetailList[j].day:
+						schedulingDetailsHeadList[i].schedulingDetailList[j].day;
+						schedulingDetailsHeadList[i].schedulingDetailList[j].date
+						=schedulingDetailsHeadList[i].schedulingDetailList[j].year+'-'
+						+schedulingDetailsHeadList[i].schedulingDetailList[j].month+'-'
+						+schedulingDetailsHeadList[i].schedulingDetailList[j].day;
+						schedulingDetailsHeadList[i].schedulingDetailList[j].weekend 
+						=this.moment(schedulingDetailsHeadList[i].schedulingDetailList[j].date).format('ddd');
+						console.log(schedulingDetailsHeadList[i].schedulingDetailList[j].timeInterval)
+						
 					}
 				}
-				return englishInt
+				console.log(schedulingDetailsHeadList)
+				this.tableData = schedulingDetailsHeadList;
 			},
 			// 查看排班表名称列表
 			getNameList() {

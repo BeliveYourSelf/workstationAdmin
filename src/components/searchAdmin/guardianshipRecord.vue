@@ -25,7 +25,7 @@
 						<el-input
 						  suffix-icon="el-icon-search"
 							class="input-width margin-left"
-							placeholder="药师/患者/床号/住院号/监护记录"
+							placeholder="药师/患者/床号/监护记录"
 							v-model="searchForm.queryCondition"
 							clearable
 							@keyup.enter.native="initTable">

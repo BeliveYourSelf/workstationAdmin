@@ -2,7 +2,7 @@
 	<div class="con-area">
 				<el-breadcrumb separator-class="el-icon-arrow-right">
 				  <el-breadcrumb-item>查询</el-breadcrumb-item>
-				  <el-breadcrumb-item>ADR检测记录</el-breadcrumb-item>
+				  <el-breadcrumb-item>ADR监测记录</el-breadcrumb-item>
 				</el-breadcrumb>
 				<div class="width-style">
 					<!-- 搜索区域 -->
@@ -33,7 +33,7 @@
 								<el-input
 								  suffix-icon="el-icon-search"
 									class="input-width margin-left"
-									placeholder="药师姓名/患者姓名/床号/住院号"
+									placeholder="监测人/患者姓名/住院号"
 									v-model="searchForm.condition"
 									clearable
 									@keyup.enter.native="initTable">
@@ -52,6 +52,7 @@
 								<el-table-column fixed type="index" :index="indexMethod" label="序号" width="100" align="center">
 								</el-table-column>
 								<el-table-column prop="patientName" label="患者姓名" align="center"></el-table-column>
+								<el-table-column prop="patientBeInHospitalId" label="住院号" align="center"></el-table-column>
 								<el-table-column prop="adrMonitorTypeName" label="类型" align="center"></el-table-column>
 								<el-table-column prop="pharmacistName" label="监测人" align="center"></el-table-column>
 								<el-table-column prop="descript" label="描述" align="center" :show-overflow-tooltip="true"></el-table-column>
@@ -124,7 +125,7 @@
 				this.tableData = res.data.data.list;
 				this.total = res.data.data.total;
 			},
-			// 获取adrMonitorTypeList 检测类型
+			// 获取adrMonitorTypeList 监测类型
 			getAdrMonitorTypeList() {
 				let _this = this;
 				let apiurl = this.api.selectADRMonitorTypeList;

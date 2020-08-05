@@ -61,16 +61,16 @@
 		</div>
 		<!-- 编辑弹窗 -->
 		<el-dialog :title="formType==1?'新增':'编辑'" :visible.sync="dialogFormVisible" :before-close="clearForm">
-		  <el-form :model="editForm" class="hospital-edit" ref="editForm">
-		    <el-form-item label="名称:" :label-width="formLabelWidth">
+		  <el-form :model="editForm" :rules="rules" class="hospital-edit" ref="editForm">
+		    <el-form-item label="名称:" :label-width="formLabelWidth" prop="roleName">
 		      <el-input v-model="editForm.roleName" autocomplete="off" ></el-input>
 		    </el-form-item>
-				<el-form-item label="描述:" :label-width="formLabelWidth">
+				<el-form-item label="描述:" :label-width="formLabelWidth" prop="description">
 				  <el-input type="textarea" v-model="editForm.description" autocomplete="off" ></el-input>
 				</el-form-item>
 		  </el-form>
 		  <div slot="footer" class="dialog-footer">
-		    <el-button type="primary" @click="saveSet">确 定</el-button>
+		    <el-button type="primary" @click="saveSet('editForm')">确 定</el-button>
 		    <el-button @click="clearForm">取 消</el-button>
 		  </div>
 		</el-dialog>
@@ -96,6 +96,18 @@
 				editForm: {
 					roleName:'',
 					description:''
+				},
+				rules: {
+					roleName: [{
+						required: true,
+						message: '请输入职务名称',
+						trigger: 'blur'
+					}],
+					description: [{
+						required: true,
+						message: '请输入职务描述',
+						trigger: 'blur'
+					}]
 				},
 				formLabelWidth: '80px',
 				updateSet: '',
@@ -191,16 +203,24 @@
 				_this.dialogFormVisible = true;
 				_this.formType = 1;
 			},
-			saveSet() {
-				if(this.formType == 1) {
-					let apiurl = this.api.insertRole;
-					let usuallyLanguage = this.editForm;
-					this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
-				} else if(this.formType == 2) {
-					let apiurl = this.api.updateRole;
-					let usuallyLanguage = this.editForm;
-					this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
-				} 
+			saveSet(formName) {
+				let _this = this;
+				this.$refs[formName].validate((valid) => {
+				  if (valid) {
+						if(this.formType == 1) {
+							let apiurl = this.api.insertRole;
+							let usuallyLanguage = this.editForm;
+							this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
+						} else if(this.formType == 2) {
+							let apiurl = this.api.updateRole;
+							let usuallyLanguage = this.editForm;
+							this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
+						} 
+				  } else {
+				    console.log('error submit!!');
+				    return false;
+				  }
+				});
 			},
 			returnSave(res) {
 				if(res.data.status) {

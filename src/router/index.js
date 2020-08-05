@@ -12,14 +12,14 @@ import drugAdminDesc from '@/components/basicData/drugAdminDesc.vue' //基本数
 import trialRuleAdmin from '@/components/basicData/trialRuleAdmin.vue' //基本数据管理-审方规则
 import commonWordsAdmin from '@/components/basicData/commonWordsAdmin.vue' //基本数据管理-查房常用语
 import jobAdmin from '@/components/basicData/jobAdmin.vue' //基本数据管理-职务
-import ADRTypeAdmin from '@/components/basicData/ADRTypeAdmin.vue' //基本数据管理-ADR检测记录类别
+import ADRTypeAdmin from '@/components/basicData/ADRTypeAdmin.vue' //基本数据管理-ADR监测记录类别
 import workload from '@/components/searchAdmin/workload.vue' //查询-工作量
 import unreasonableMedication from '@/components/searchAdmin/unreasonableMedication.vue' //查询-不合理用药
 import unreasonableMedicationView from '@/components/searchAdmin/unreasonableMedicationView.vue' //查询-不合理用药查看
 import roundupRecords from '@/components/searchAdmin/roundupRecords.vue' //查询-查房记录
 import prescription from '@/components/searchAdmin/prescription.vue' //查询-处方
 import guardianshipRecord from '@/components/searchAdmin/guardianshipRecord.vue' //查询-监护记录
-import ADRtestRecords from '@/components/searchAdmin/ADRtestRecords.vue' //查询-ADR检测记录
+import ADRtestRecords from '@/components/searchAdmin/ADRtestRecords.vue' //查询-ADR监测记录
 import shiftAdmin from '@/components/dailyAdmin/shiftAdmin.vue' //日常管理-排班
 import lavelAdmin from '@/components/dailyAdmin/lavelAdmin.vue' //日常管理-监护等级
 import scheduleAdmin from '@/components/pharmacyShift/scheduleAdmin.vue' //药学交班-排班表
@@ -120,7 +120,7 @@ export default new Router({
 				path: 'ADRTypeAdmin',
 				component: ADRTypeAdmin,
 				meta: {
-					title: 'ADR检测类别'
+					title: 'ADR监测类别'
 				}
 			},{
 				path: 'unreasonableMedication',
@@ -164,7 +164,7 @@ export default new Router({
 				path: 'ADRtestRecords',
 				component: ADRtestRecords,
 				meta: {
-					title: 'ADR检测记录'
+					title: 'ADR监测记录'
 				}
 			},{
 				path: 'shiftAdmin',

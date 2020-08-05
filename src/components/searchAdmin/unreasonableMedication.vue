@@ -195,7 +195,7 @@
 			// excel导出打印
 			downloadExcel() {
 				let apiurl = this.api.selectDocAdviceStatisticsPrint
-									 +'?systemCheckOrPersonCheck='+this.systemCheckOrPersonCheck;
+									 +'?systemCheckOrPersonCheck='+this.searchForm.systemCheckOrPersonCheck;
 				if(this.searchForm.searchData != '') {					apiurl += '&startTime=' + this.searchForm.searchData[0] + '&endTime=' + this.searchForm.searchData[1];				}
 				this.common.getAxios(apiurl, this.returnDownloadExcel);
 			},

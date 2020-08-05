@@ -144,7 +144,7 @@
 					{name: '不合理用药',id: 9},
 					{name: '查房记录',id: 10},
 					{name: '监护记录',id: 11},
-					{name: 'ADR检测记录',id: 12},
+					{name: 'ADR监测记录',id: 12},
 					{name: '排班管理',id: 13,},
 					{name: '药学交接班',id: 14,},
 				],
@@ -163,7 +163,7 @@
 					{name: '不合理用药',id: 9},
 					{name: '查房记录',id: 10},
 					{name: '监护记录',id: 11},
-					{name: 'ADR检测记录',id: 12},
+					{name: 'ADR监测记录',id: 12},
 				],
 				dailyManagementList: [
 					{name: '排班管理',id: 13,},
@@ -189,7 +189,6 @@
 			},
 			// 获取表格信息
 			getTable() {
-				console.log(this.api)
 				let apiurl = this.api.selectUserList+'?page='+this.page+'&length='+this.length;
 				if(this.searchForm.userName!='') {
 					apiurl += '&userName=' + this.searchForm.userName;

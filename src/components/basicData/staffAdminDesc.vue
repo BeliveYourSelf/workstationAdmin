@@ -130,6 +130,7 @@
 
 <script>
   export default {
+		inject:['reload'],   
     data() {
       return {
         checked: false,
@@ -320,6 +321,7 @@
 			returnRole(res) {
 				if(res.data.status) {
 					this.$message.success('用户信息修改成功')
+					this.reload();
 				} else {
 					this.$message.error(res.data.msg);
 				}
@@ -327,6 +329,7 @@
 			returnSavePermission(res) {
 				if(res.data.status) {
 					this.$message.success('用户权限修改成功')
+					this.reload();
 				} else {
 					this.$message.error(res.data.msg);
 				}

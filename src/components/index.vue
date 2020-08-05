@@ -35,7 +35,7 @@
 		    		class="el-menu-vertical-demo my-menu" 
 		    		:collapse="isCollapse"
 		    		active-text-color="#fff">
-							<el-submenu :index="10">
+							<el-submenu index="1">
 							  <template slot="title">
 									<div class="nav-list">
 										<!-- <img class="nav-pic" :src="list.icon" alt=""> -->
@@ -45,7 +45,7 @@
 							  </template>
 							  <el-menu-item-group>
 							    <el-menu-item 
-									 :index="10-1" 
+									 index="1-1" 
 									 @click="goPath('workBench')">工作台</el-menu-item>
 								</el-menu-item-group>
 							</el-submenu>

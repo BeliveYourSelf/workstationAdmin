@@ -25,7 +25,7 @@
 						<el-input
 						  suffix-icon="el-icon-search"
 							class="margin-left input-width"
-							placeholder="药师/患者/床号/住院号/监护记录"
+							placeholder="药师/患者/床号/住院号"
 							v-model="searchForm.queryCondition"
 							clearable
 							@keyup.enter.native="initTable">
@@ -45,6 +45,7 @@
 					<el-table-column prop="pharmacistName" label="药师姓名" align="center"></el-table-column>
 					<el-table-column prop="createTime" label="查房时间" align="center" width="180"></el-table-column>
 					<el-table-column prop="pharmacistName" label="患者姓名" align="center"></el-table-column>
+					<el-table-column prop="patientBeInHospitalId" label="住院号" align="center"></el-table-column>
 					<el-table-column prop="departmentWardName" label="科室" align="center"></el-table-column>
 					<el-table-column prop="bedNumber" label="床号" align="center" :show-overflow-tooltip="true"></el-table-column>
 					<el-table-column prop="monitorLevelName" label="监护级别" align="center"></el-table-column>

@@ -67,13 +67,13 @@
 		</div>
 		<!-- 编辑弹窗 -->
 		<el-dialog :title="formType==1?'新增':'编辑'" :visible.sync="dialogFormVisible" :before-close="clearForm">
-		  <el-form :model="editForm" class="hospital-edit" ref="editForm">
-		    <el-form-item label="常用语:" :label-width="formLabelWidth" prop="name">
+		  <el-form :model="editForm" :rules="rules" class="hospital-edit" ref="editForm">
+		    <el-form-item label="常用语:" :label-width="formLabelWidth" prop="content">
 		      <el-input type="textarea" v-model="editForm.content" autocomplete="off" ></el-input>
 		    </el-form-item>
 		  </el-form>
 		  <div slot="footer" class="dialog-footer">
-		    <el-button type="primary" @click="saveSet">确 定</el-button>
+		    <el-button type="primary" @click="saveSet('editForm')">确 定</el-button>
 		    <el-button @click="clearForm">取 消</el-button>
 		  </div>
 		</el-dialog>
@@ -97,9 +97,16 @@
 				dialogFormVisible: false,
 				// 编辑表单
 				editForm: {
-					name:'',
+					content:'',
 					weights: '',
 					descript:''
+				},
+				rules: {
+					content: [{
+						required: true,
+						message: '请输入常用语',
+						trigger: 'blur'
+					}]
 				},
 				groupList: [{
 					name: '1',
@@ -207,16 +214,25 @@
 				_this.dialogFormVisible = true;
 				_this.formType = 1;
 			},
-			saveSet() {
-				if(this.formType == 1) {
-					let apiurl = this.api.insertUsuallyLanguage;
-					let usuallyLanguage = this.editForm;
-					this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
-				} else if(this.formType == 2) {
-					let apiurl = this.api.updateUsuallyLanguage;
-					let usuallyLanguage = this.editForm;
-					this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
-				} 
+			saveSet(formName) {
+				let _this = this;
+				this.$refs[formName].validate((valid) => {
+				  if (valid) {
+						if(this.formType == 1) {
+							let apiurl = this.api.insertUsuallyLanguage;
+							let usuallyLanguage = this.editForm;
+							this.common.postAxios(apiurl, usuallyLanguage, this.returnSave);
+						} else if(this.formType == 2) {
+							let apiurl = this.api.updateUsuallyLanguage;
+							let usuallyLanguage = this.editForm;
+							this.common.putAxios(apiurl, usuallyLanguage, this.returnUpdate);
+						} 
+						
+				  } else {
+				    console.log('error submit!!');
+				    return false;
+				  }
+				});
 			},
 			returnSave(res) {
 				if(res.data.status) {

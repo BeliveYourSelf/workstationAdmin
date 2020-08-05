@@ -185,7 +185,7 @@
 					</div>
 				</el-dialog>
 				<el-dialog title="选择单位制剂" :visible.sync="dialogFormVisibleUnit" class="dialog-unit">
-					<el-input v-model="unitSearchCondition"></el-input>
+					<el-input v-model="unitSearchCondition" @keyup.enter.native="getUnitPreparationList"></el-input>
 					<el-table
 					 :data="unitPreparationList"
 					 ref="unitPreparationListTable"
@@ -442,15 +442,19 @@
 			addOther() {
 				let _this = this;
 				let apiurl = this.api.insertAddCondition;
-				let addCondition = {name: this.otherConditionsForm.name};
-				this.common.postAxios(apiurl, addCondition, returnAdd);
-				function returnAdd(res) {
-					if(res.data.status) {
-						_this.$message.success('添加成功');
-						_this.otherConditionsForm.name = '';
-						_this.getOtherConditionsList();
-					} else {
-						_this.$message.success(res.data.msg);
+				if(this.otherConditionsForm.name == '') {
+					this.$message.error('请输入附加条件内容')
+				} else {
+					let addCondition = {name: this.otherConditionsForm.name};
+					this.common.postAxios(apiurl, addCondition, returnAdd);
+					function returnAdd(res) {
+						if(res.data.status) {
+							_this.$message.success('添加成功');
+							_this.otherConditionsForm.name = '';
+							_this.getOtherConditionsList();
+						} else {
+							_this.$message.success(res.data.msg);
+						}
 					}
 				}
 			},
@@ -483,19 +487,23 @@
 			editSaveOther() {
 				let _this = this;
 				let apiurl = this.api.updateAddCondition;
-				let addCondition = {
-					name: this.otherConditionsForm.name,
-					id: this.otherConditionsList[this.editIndex].id
-				};
-				this.common.putAxios(apiurl, addCondition, returnPut);
-				function returnPut(res) {
-					if(res.data.status) {
-						_this.$message.success('修改成功');
-						_this.otherConditionsForm.name = '';
-						_this.otherConditionsIsEdit = false;
-						_this.getOtherConditionsList();
-					} else {
-						_this.$message.success(res.data.msg);
+				if(this.otherConditionsForm.name == '') {
+					this.$message.error('请输入附加条件内容')
+				} else {
+					let addCondition = {
+						name: this.otherConditionsForm.name,
+						id: this.otherConditionsList[this.editIndex].id
+					};
+					this.common.putAxios(apiurl, addCondition, returnPut);
+					function returnPut(res) {
+						if(res.data.status) {
+							_this.$message.success('修改成功');
+							_this.otherConditionsForm.name = '';
+							_this.otherConditionsIsEdit = false;
+							_this.getOtherConditionsList();
+						} else {
+							_this.$message.success(res.data.msg);
+						}
 					}
 				}
 			},
